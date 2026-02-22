@@ -1,0 +1,5973 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>capstone data analysis - spatial</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="coop_capstone_eda_spatial_files/libs/clipboard/clipboard.min.js"></script>
+<script src="coop_capstone_eda_spatial_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="coop_capstone_eda_spatial_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="coop_capstone_eda_spatial_files/libs/quarto-html/popper.min.js"></script>
+<script src="coop_capstone_eda_spatial_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="coop_capstone_eda_spatial_files/libs/quarto-html/anchor.min.js"></script>
+<link href="coop_capstone_eda_spatial_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="coop_capstone_eda_spatial_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="coop_capstone_eda_spatial_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="coop_capstone_eda_spatial_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="coop_capstone_eda_spatial_files/libs/bootstrap/bootstrap-bb462d781dde1847d9e3ccf7736099dd.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">capstone data analysis - spatial</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="run-data-cleaning-qmd-first" class="level3">
+<h3 class="anchored" data-anchor-id="run-data-cleaning-qmd-first">RUN DATA CLEANING QMD FIRST</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">FALSE</span>, <span class="at">warning =</span> <span class="cn">FALSE</span>, <span class="at">message =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.1     ✔ stringr   1.5.2
+✔ ggplot2   4.0.0     ✔ tibble    3.3.0
+✔ lubridate 1.9.4     ✔ tidyr     1.3.1
+✔ purrr     1.1.0     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'janitor'
+
+The following objects are masked from 'package:stats':
+
+    chisq.test, fisher.test</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(skimr)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tinytex)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(writexl)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pillar)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'pillar'
+
+The following object is masked from 'package:dplyr':
+
+    dim_desc</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(scales)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'scales'
+
+The following object is masked from 'package:purrr':
+
+    discard
+
+The following object is masked from 'package:readr':
+
+    col_factor</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DT)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>dat_kpis <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/dat_kpis.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 727 Columns: 24
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (11): location, city, state, city_primary, audience_segment, creative_si...
+dbl (13): impressions, clicks, viewable_impressions, measurable_impressions,...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
+</section>
+<section id="data-glossary" class="level1">
+<h1>Data Glossary</h1>
+<p>Here’s an explanation of each column in the final <code>dat_kpis</code> dataset:</p>
+<section id="original-cleaned-location-columns" class="level2">
+<h2 class="anchored" data-anchor-id="original-cleaned-location-columns">Original &amp; Cleaned Location Columns</h2>
+<ul>
+<li><strong><code>location</code></strong>: The original, raw location string as it appeared in the input data (e.g., “Orlando-Daytona Beach, Florida”, “Mobile, Alabama-Pensacola, Florida”).</li>
+<li><strong><code>city</code></strong>: The city part extracted directly after splitting the location string by the first comma. This might contain multiple city names or DMA names (e.g., “Orlando-Daytona Beach”, “Champaign &amp; Springfield-Decatur”).</li>
+<li><strong><code>state</code></strong>: The cleaned and standardized state name, corrected for cross-state DMA entries (e.g., “Florida”, “Alabama”, “Tennessee”).</li>
+<li><strong><code>city_primary</code></strong>: The single, primary city name extracted from the <code>city</code> column, intended for geocoding and mapping (e.g., “Orlando”, “Champaign”, “Mobile”, “Los Angeles”).</li>
+<li><strong><code>state_raw</code></strong>: A temporary column holding the state information immediately after the initial separate split, before manual corrections were applied (e.g., “Florida”, “Alabama-Pensacola, Florida”).</li>
+</ul>
+</section>
+<section id="ad-details-targeting-columns" class="level2">
+<h2 class="anchored" data-anchor-id="ad-details-targeting-columns">Ad Details &amp; Targeting Columns</h2>
+<ul>
+<li><strong><code>audience_segment</code></strong>: Describes the target audience characteristics or online behavior used for showing the ad (e.g., “Online Behavior&gt;United States&gt;Finance&gt;Financial Planning…”).</li>
+<li><strong><code>creative_size</code></strong>: The dimensions of the ad creative in pixels (e.g., “300x250”, “320x50”).</li>
+<li><strong><code>creative_messaging</code></strong>: The marketing message or call to action used in the ad (e.g., “Subscribe Today - 10% Discount”, “Sign up Now - 10% Off”).</li>
+<li><strong><code>app_url</code></strong>: The specific website or app where the ad impression occurred (e.g., “accuweather.com”, “cnn.com”).</li>
+<li><strong><code>exchange</code></strong>: The advertising technology platform that facilitated the ad serving (e.g., “Google Ad Manager”, “PubMatic”).</li>
+<li><strong><code>device_make</code></strong>: The type of device on which the ad was displayed (e.g., “Smartphone”, “Apple PC”, “Windows PC”).</li>
+</ul>
+</section>
+<section id="core-performance-metrics" class="level2">
+<h2 class="anchored" data-anchor-id="core-performance-metrics">Core Performance Metrics</h2>
+<ul>
+<li><strong><code>impressions</code></strong>: The total number of times the ad was displayed.</li>
+<li><strong><code>clicks</code></strong>: The total number of times the ad was clicked.</li>
+<li><strong><code>viewable_impressions</code></strong>: The number of impressions where the ad met industry standards for actually being considered viewable by a user.</li>
+<li><strong><code>measurable_impressions</code></strong>: The number of impressions for which viewability could be technically measured.</li>
+<li><strong><code>total_conversions</code></strong>: The number of times a desired action (like a sign-up or purchase) was completed after a user clicked the ad.</li>
+<li><strong><code>gross_cost</code></strong>: The total amount spent for the ad impressions/clicks listed in that row.</li>
+</ul>
+</section>
+<section id="calculated-kpis" class="level2">
+<h2 class="anchored" data-anchor-id="calculated-kpis">Calculated KPIs</h2>
+<ul>
+<li><strong><code>ctr</code> (Click-Through Rate)</strong>: <span class="math inline">\((\frac{\text{clicks}}{\text{impressions}})\)</span>. Shows the percentage of impressions that led to a click.</li>
+<li><strong><code>conv_rate</code> (Conversion Rate/CVR)</strong>: <span class="math inline">\((\frac{\text{total\_conversions}}{\text{clicks}})\)</span>. Shows the percentage of clicks that led to a conversion.</li>
+<li><strong><code>cpa</code> (Cost Per Acquisition)</strong>: <span class="math inline">\((\frac{\text{gross\_cost}}{\text{total\_conversions}})\)</span>. The average cost to acquire one conversion. (<span class="math inline">\(\text{NA}\)</span> if conversions <span class="math inline">\(\text{= 0}\)</span>).</li>
+<li><strong><code>cpc</code> (Cost Per Click)</strong>: <span class="math inline">\((\frac{\text{gross\_cost}}{\text{clicks}})\)</span>. The average cost for each click. (<span class="math inline">\(\text{NA}\)</span> if clicks <span class="math inline">\(\text{= 0}\)</span>).</li>
+<li><strong><code>ecpm</code> (Effective Cost Per Mille/Thousand)</strong>: <span class="math inline">\((\frac{\text{gross\_cost}}{\text{impressions}}) \times 1000\)</span>. The cost for one thousand impressions.</li>
+<li><strong><code>view_rate</code> (Viewability Rate)</strong>: <span class="math inline">\((\frac{\text{viewable\_impressions}}{\text{measurable\_impressions}})\)</span>. The percentage of measurable impressions that were actually viewable.</li>
+<li><strong><code>vcpm</code> (Viewable Cost Per Mille/Thousand)</strong>: <span class="math inline">\((\frac{\text{gross\_cost}}{\text{viewable\_impressions}}) \times 1000\)</span>. The cost for one thousand viewable impressions. (<span class="math inline">\(\text{NA}\)</span> if viewable_impressions <span class="math inline">\(\text{= 0}\)</span>).</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="identify-which-locations-were-the-most-cost-effective-cpa-cvr-cpc" class="level1">
+<h1>Identify which Locations were the most cost effective (CPA, CVR, CPC)</h1>
+<section id="calculating-kpis-per-citylocation" class="level2">
+<h2 class="anchored" data-anchor-id="calculating-kpis-per-citylocation">Calculating KPIs Per City/Location</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let's figure out which cities spent money most efficiently (all kpis)</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># first, group everything by our clean city name and state</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>location_all_kpis <span class="ot">&lt;-</span> dat_kpis <span class="sc">|&gt;</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(city_primary, state) <span class="sc">|&gt;</span> <span class="co"># group by sets the stage for aggregation, adds grouping structure to the data frame so we can look at data</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># for each city/state combo, calc totals </span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># find total num, conversions</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_conversions =</span> <span class="fu">sum</span>(total_conversions),</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># total up cost for each location</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_gross_cost =</span> <span class="fu">sum</span>(gross_cost),</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add total clicks for cvr and cpc calcs</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_clicks =</span> <span class="fu">sum</span>(clicks),</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add impression metrics for branding kpis</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_impressions =</span> <span class="fu">sum</span>(impressions),</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_measurable_impressions =</span> <span class="fu">sum</span>(measurable_impressions),</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_viewable_impressions =</span> <span class="fu">sum</span>(viewable_impressions),</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># --- direct response kpis ---</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate the overall cost per conversion (cpa) for this specific location  </span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># lower cpa = cheaper to convert people </span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># we check if total_conversions is &gt; 0 to avoid dividing by zero </span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_cpa =</span> <span class="fu">ifelse</span>(total_conversions <span class="sc">&gt;</span> <span class="dv">0</span>, total_gross_cost <span class="sc">/</span> total_conversions, na_real_),</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate overall conversion rate (cvr)</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_conv_rate =</span> <span class="fu">ifelse</span>(total_clicks <span class="sc">&gt;</span> <span class="dv">0</span>, total_conversions <span class="sc">/</span> total_clicks, <span class="dv">0</span>),</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate overall cost per click (cpc)</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_cpc =</span> <span class="fu">ifelse</span>(total_clicks <span class="sc">&gt;</span> <span class="dv">0</span>, total_gross_cost <span class="sc">/</span> total_clicks, na_real_),</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># --- branding kpis ---</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate overall ctr</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_ctr =</span> <span class="fu">ifelse</span>(total_impressions <span class="sc">&gt;</span> <span class="dv">0</span>, total_clicks <span class="sc">/</span> total_impressions, <span class="dv">0</span>),</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate overall viewability rate</span></span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_view_rate =</span> <span class="fu">ifelse</span>(total_measurable_impressions <span class="sc">&gt;</span> <span class="dv">0</span>, total_viewable_impressions <span class="sc">/</span> total_measurable_impressions, <span class="dv">0</span>),</span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate overall vcpm (cost per thousand viewable impressions)</span></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_vcpm =</span> <span class="fu">ifelse</span>(total_viewable_impressions <span class="sc">&gt;</span> <span class="dv">0</span>, (total_gross_cost <span class="sc">/</span> total_viewable_impressions) <span class="sc">*</span> <span class="dv">1000</span>, na_real_),</span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ungroup after summarise</span></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">'drop'</span></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>  <span class="co"># only keep locations that had at least 5 conversions, average cpa is more reliable</span></span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(total_conversions <span class="sc">&gt;=</span> <span class="dv">5</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>  <span class="co"># finally, sort the whole table by the average cpa</span></span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(avg_cpa)) <span class="sc">|&gt;</span> </span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_cpa =</span> <span class="fu">round</span>(avg_cpa, <span class="dv">2</span>),</span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>    <span class="co"># round new kpis as well</span></span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_conv_rate =</span> <span class="fu">round</span>(avg_conv_rate, <span class="dv">4</span>),</span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_cpc =</span> <span class="fu">round</span>(avg_cpc, <span class="dv">2</span>),</span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a>    <span class="co"># round branding kpis</span></span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_ctr =</span> <span class="fu">round</span>(avg_ctr, <span class="dv">4</span>),</span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_view_rate =</span> <span class="fu">round</span>(avg_view_rate, <span class="dv">4</span>),</span>
+<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_vcpm =</span> <span class="fu">round</span>(avg_vcpm, <span class="dv">2</span>)</span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a><span class="co"># group by/sort by avg_cpa but aggregate by city_primary and state</span></span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a><span class="co"># group by defines categories within data based on variables</span></span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a><span class="co"># aggregation calculates summary statistics across groups we've defined</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="identifying-avg-performance-metrics-per-citylocation" class="level2">
+<h2 class="anchored" data-anchor-id="identifying-avg-performance-metrics-per-citylocation">Identifying Avg Performance Metrics Per City/Location</h2>
+<table>
+<caption>
+20 Most Cost-Effective Locations by Average CPA
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Primary City
+</th>
+<th style="text-align:left;">
+State
+</th>
+<th style="text-align:left;">
+Avg CPA
+</th>
+<th style="text-align:left;">
+Avg CVR
+</th>
+<th style="text-align:left;">
+Avg CPC
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Lafayette
+</td>
+<td style="text-align:left;">
+Indiana
+</td>
+<td style="text-align:left;">
+$49.86
+</td>
+<td style="text-align:left;">
+5.04%
+</td>
+<td style="text-align:left;">
+$2.51
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ft. Wayne
+</td>
+<td style="text-align:left;">
+Indiana
+</td>
+<td style="text-align:left;">
+$136.92
+</td>
+<td style="text-align:left;">
+7.76%
+</td>
+<td style="text-align:left;">
+$10.63
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Panama City
+</td>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+$174.71
+</td>
+<td style="text-align:left;">
+6.43%
+</td>
+<td style="text-align:left;">
+$11.23
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Louisville
+</td>
+<td style="text-align:left;">
+Kentucky
+</td>
+<td style="text-align:left;">
+$183.58
+</td>
+<td style="text-align:left;">
+8.62%
+</td>
+<td style="text-align:left;">
+$15.83
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Toledo
+</td>
+<td style="text-align:left;">
+Ohio
+</td>
+<td style="text-align:left;">
+$239.51
+</td>
+<td style="text-align:left;">
+2.50%
+</td>
+<td style="text-align:left;">
+$5.99
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Cincinnati
+</td>
+<td style="text-align:left;">
+Ohio
+</td>
+<td style="text-align:left;">
+$252.18
+</td>
+<td style="text-align:left;">
+4.08%
+</td>
+<td style="text-align:left;">
+$10.29
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Augusta
+</td>
+<td style="text-align:left;">
+Georgia
+</td>
+<td style="text-align:left;">
+$254.74
+</td>
+<td style="text-align:left;">
+6.76%
+</td>
+<td style="text-align:left;">
+$17.23
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+New York City
+</td>
+<td style="text-align:left;">
+New York
+</td>
+<td style="text-align:left;">
+$276.79
+</td>
+<td style="text-align:left;">
+4.27%
+</td>
+<td style="text-align:left;">
+$11.81
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Jackson
+</td>
+<td style="text-align:left;">
+Mississippi
+</td>
+<td style="text-align:left;">
+$296.47
+</td>
+<td style="text-align:left;">
+3.77%
+</td>
+<td style="text-align:left;">
+$11.17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Miami
+</td>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+$297.27
+</td>
+<td style="text-align:left;">
+3.79%
+</td>
+<td style="text-align:left;">
+$11.27
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Chicago
+</td>
+<td style="text-align:left;">
+Illinois
+</td>
+<td style="text-align:left;">
+$297.50
+</td>
+<td style="text-align:left;">
+3.17%
+</td>
+<td style="text-align:left;">
+$9.44
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+South Bend
+</td>
+<td style="text-align:left;">
+Indiana
+</td>
+<td style="text-align:left;">
+$323.41
+</td>
+<td style="text-align:left;">
+7.19%
+</td>
+<td style="text-align:left;">
+$23.24
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Memphis
+</td>
+<td style="text-align:left;">
+Tennessee
+</td>
+<td style="text-align:left;">
+$323.96
+</td>
+<td style="text-align:left;">
+4.03%
+</td>
+<td style="text-align:left;">
+$13.05
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Los Angeles
+</td>
+<td style="text-align:left;">
+California
+</td>
+<td style="text-align:left;">
+$338.78
+</td>
+<td style="text-align:left;">
+2.69%
+</td>
+<td style="text-align:left;">
+$9.10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nashville
+</td>
+<td style="text-align:left;">
+Tennessee
+</td>
+<td style="text-align:left;">
+$347.88
+</td>
+<td style="text-align:left;">
+4.82%
+</td>
+<td style="text-align:left;">
+$16.77
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Birmingham
+</td>
+<td style="text-align:left;">
+Alabama
+</td>
+<td style="text-align:left;">
+$350.72
+</td>
+<td style="text-align:left;">
+3.67%
+</td>
+<td style="text-align:left;">
+$12.88
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mobile
+</td>
+<td style="text-align:left;">
+Alabama
+</td>
+<td style="text-align:left;">
+$356.06
+</td>
+<td style="text-align:left;">
+6.70%
+</td>
+<td style="text-align:left;">
+$23.85
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Tallahassee
+</td>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+$362.39
+</td>
+<td style="text-align:left;">
+3.48%
+</td>
+<td style="text-align:left;">
+$12.61
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+West Palm Beach
+</td>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+$364.80
+</td>
+<td style="text-align:left;">
+5.16%
+</td>
+<td style="text-align:left;">
+$18.84
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ft. Myers
+</td>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+$368.17
+</td>
+<td style="text-align:left;">
+2.72%
+</td>
+<td style="text-align:left;">
+$10.02
+</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>
+20 Least Cost-Effective Locations by Average CPA
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Primary City
+</th>
+<th style="text-align:left;">
+State
+</th>
+<th style="text-align:left;">
+Avg CPA
+</th>
+<th style="text-align:left;">
+Avg CVR
+</th>
+<th style="text-align:left;">
+Avg CPC
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Savannah
+</td>
+<td style="text-align:left;">
+Georgia
+</td>
+<td style="text-align:left;">
+$725.77
+</td>
+<td style="text-align:left;">
+2.74%
+</td>
+<td style="text-align:left;">
+$19.86
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Chattanooga
+</td>
+<td style="text-align:left;">
+Tennessee
+</td>
+<td style="text-align:left;">
+$687.40
+</td>
+<td style="text-align:left;">
+5.56%
+</td>
+<td style="text-align:left;">
+$38.19
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Huntsville
+</td>
+<td style="text-align:left;">
+Alabama
+</td>
+<td style="text-align:left;">
+$683.01
+</td>
+<td style="text-align:left;">
+8.46%
+</td>
+<td style="text-align:left;">
+$57.79
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Tri-Cities
+</td>
+<td style="text-align:left;">
+Tennessee
+</td>
+<td style="text-align:left;">
+$631.70
+</td>
+<td style="text-align:left;">
+2.31%
+</td>
+<td style="text-align:left;">
+$14.61
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Charleston
+</td>
+<td style="text-align:left;">
+South Carolina
+</td>
+<td style="text-align:left;">
+$577.46
+</td>
+<td style="text-align:left;">
+2.03%
+</td>
+<td style="text-align:left;">
+$11.70
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Shreveport
+</td>
+<td style="text-align:left;">
+Louisiana
+</td>
+<td style="text-align:left;">
+$554.12
+</td>
+<td style="text-align:left;">
+0.92%
+</td>
+<td style="text-align:left;">
+$5.10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Flint
+</td>
+<td style="text-align:left;">
+Michigan
+</td>
+<td style="text-align:left;">
+$502.85
+</td>
+<td style="text-align:left;">
+3.06%
+</td>
+<td style="text-align:left;">
+$15.38
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Lansing
+</td>
+<td style="text-align:left;">
+Michigan
+</td>
+<td style="text-align:left;">
+$452.41
+</td>
+<td style="text-align:left;">
+2.04%
+</td>
+<td style="text-align:left;">
+$9.23
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Jacksonville
+</td>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+$445.07
+</td>
+<td style="text-align:left;">
+4.98%
+</td>
+<td style="text-align:left;">
+$22.17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Tampa
+</td>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+$442.13
+</td>
+<td style="text-align:left;">
+6.03%
+</td>
+<td style="text-align:left;">
+$26.66
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+San Francisco
+</td>
+<td style="text-align:left;">
+California
+</td>
+<td style="text-align:left;">
+$429.20
+</td>
+<td style="text-align:left;">
+2.40%
+</td>
+<td style="text-align:left;">
+$10.32
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rockford
+</td>
+<td style="text-align:left;">
+Illinois
+</td>
+<td style="text-align:left;">
+$423.17
+</td>
+<td style="text-align:left;">
+6.41%
+</td>
+<td style="text-align:left;">
+$27.11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Grand Rapids
+</td>
+<td style="text-align:left;">
+Michigan
+</td>
+<td style="text-align:left;">
+$419.91
+</td>
+<td style="text-align:left;">
+5.75%
+</td>
+<td style="text-align:left;">
+$24.15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Knoxville
+</td>
+<td style="text-align:left;">
+Tennessee
+</td>
+<td style="text-align:left;">
+$403.34
+</td>
+<td style="text-align:left;">
+5.86%
+</td>
+<td style="text-align:left;">
+$23.64
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Orlando
+</td>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+$397.03
+</td>
+<td style="text-align:left;">
+8.44%
+</td>
+<td style="text-align:left;">
+$33.50
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Little Rock
+</td>
+<td style="text-align:left;">
+Arkansas
+</td>
+<td style="text-align:left;">
+$382.88
+</td>
+<td style="text-align:left;">
+40.00%
+</td>
+<td style="text-align:left;">
+$153.15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Champaign
+</td>
+<td style="text-align:left;">
+Illinois
+</td>
+<td style="text-align:left;">
+$378.99
+</td>
+<td style="text-align:left;">
+5.68%
+</td>
+<td style="text-align:left;">
+$21.54
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Peoria
+</td>
+<td style="text-align:left;">
+Illinois
+</td>
+<td style="text-align:left;">
+$373.90
+</td>
+<td style="text-align:left;">
+8.04%
+</td>
+<td style="text-align:left;">
+$30.08
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ft. Myers
+</td>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+$368.17
+</td>
+<td style="text-align:left;">
+2.72%
+</td>
+<td style="text-align:left;">
+$10.02
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+West Palm Beach
+</td>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+$364.80
+</td>
+<td style="text-align:left;">
+5.16%
+</td>
+<td style="text-align:left;">
+$18.84
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="identifying-avg-branding-metrics-per-citylocation" class="level2">
+<h2 class="anchored" data-anchor-id="identifying-avg-branding-metrics-per-citylocation">Identifying Avg Branding Metrics Per City/Location</h2>
+<section id="top-15-locations-by-ctr-224k-impressions" class="level3">
+<h3 class="anchored" data-anchor-id="top-15-locations-by-ctr-224k-impressions">Top 15 locations by CTR (&gt;224k impressions)</h3>
+<table class="caption-top table" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">City</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">State</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Average CTR</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Total Clicks</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Total Impressions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Champaign</td>
+<td style="text-align: left;">Illinois</td>
+<td style="text-align: left;">0.38%</td>
+<td style="text-align: left;">1,003</td>
+<td style="text-align: left;">261,679</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Tampa</td>
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">0.34%</td>
+<td style="text-align: left;">1,708</td>
+<td style="text-align: left;">503,720</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Grand Rapids</td>
+<td style="text-align: left;">Michigan</td>
+<td style="text-align: left;">0.34%</td>
+<td style="text-align: left;">3,600</td>
+<td style="text-align: left;">1,068,222</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">West Palm Beach</td>
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">0.32%</td>
+<td style="text-align: left;">3,698</td>
+<td style="text-align: left;">1,159,025</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Augusta</td>
+<td style="text-align: left;">Georgia</td>
+<td style="text-align: left;">0.31%</td>
+<td style="text-align: left;">1,168</td>
+<td style="text-align: left;">372,088</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Flint</td>
+<td style="text-align: left;">Michigan</td>
+<td style="text-align: left;">0.30%</td>
+<td style="text-align: left;">1,994</td>
+<td style="text-align: left;">671,836</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Jacksonville</td>
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">0.30%</td>
+<td style="text-align: left;">4,938</td>
+<td style="text-align: left;">1,637,526</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Orlando</td>
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">0.30%</td>
+<td style="text-align: left;">1,742</td>
+<td style="text-align: left;">588,916</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ft. Myers</td>
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">0.30%</td>
+<td style="text-align: left;">4,594</td>
+<td style="text-align: left;">1,535,857</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ft. Wayne</td>
+<td style="text-align: left;">Indiana</td>
+<td style="text-align: left;">0.30%</td>
+<td style="text-align: left;">1,778</td>
+<td style="text-align: left;">586,285</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Nashville</td>
+<td style="text-align: left;">Tennessee</td>
+<td style="text-align: left;">0.29%</td>
+<td style="text-align: left;">10,910</td>
+<td style="text-align: left;">3,809,996</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">South Bend</td>
+<td style="text-align: left;">Indiana</td>
+<td style="text-align: left;">0.29%</td>
+<td style="text-align: left;">1,127</td>
+<td style="text-align: left;">387,261</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Miami</td>
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">0.29%</td>
+<td style="text-align: left;">17,801</td>
+<td style="text-align: left;">6,159,915</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Charleston</td>
+<td style="text-align: left;">South Carolina</td>
+<td style="text-align: left;">0.28%</td>
+<td style="text-align: left;">1,431</td>
+<td style="text-align: left;">514,043</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Shreveport</td>
+<td style="text-align: left;">Louisiana</td>
+<td style="text-align: left;">0.28%</td>
+<td style="text-align: left;">652</td>
+<td style="text-align: left;">234,889</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-15-locations-by-viewability-rate-154k-measurable-impressions" class="level3">
+<h3 class="anchored" data-anchor-id="top-15-locations-by-viewability-rate-154k-measurable-impressions">Top 15 Locations by Viewability rate (&gt;~154k measurable impressions)</h3>
+<table class="caption-top table" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">City</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">State</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Average View Rate</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Total Viewable Impressions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Toledo</td>
+<td style="text-align: left;">Ohio</td>
+<td style="text-align: left;">78.62%</td>
+<td style="text-align: left;">155,722</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Tri-Cities</td>
+<td style="text-align: left;">Tennessee</td>
+<td style="text-align: left;">68.27%</td>
+<td style="text-align: left;">210,839</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Jackson</td>
+<td style="text-align: left;">Mississippi</td>
+<td style="text-align: left;">67.83%</td>
+<td style="text-align: left;">159,011</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Nashville</td>
+<td style="text-align: left;">Tennessee</td>
+<td style="text-align: left;">66.76%</td>
+<td style="text-align: left;">2,295,337</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Los Angeles</td>
+<td style="text-align: left;">California</td>
+<td style="text-align: left;">61.87%</td>
+<td style="text-align: left;">6,868,247</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Augusta</td>
+<td style="text-align: left;">Georgia</td>
+<td style="text-align: left;">61.05%</td>
+<td style="text-align: left;">106,963</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Champaign</td>
+<td style="text-align: left;">Illinois</td>
+<td style="text-align: left;">59.80%</td>
+<td style="text-align: left;">137,050</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Chicago</td>
+<td style="text-align: left;">Illinois</td>
+<td style="text-align: left;">59.51%</td>
+<td style="text-align: left;">14,123,143</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">San Francisco</td>
+<td style="text-align: left;">California</td>
+<td style="text-align: left;">58.39%</td>
+<td style="text-align: left;">3,704,351</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Tampa</td>
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">57.38%</td>
+<td style="text-align: left;">250,265</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Miami</td>
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">56.34%</td>
+<td style="text-align: left;">3,118,842</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Chattanooga</td>
+<td style="text-align: left;">Tennessee</td>
+<td style="text-align: left;">56.30%</td>
+<td style="text-align: left;">116,154</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Memphis</td>
+<td style="text-align: left;">Tennessee</td>
+<td style="text-align: left;">56.20%</td>
+<td style="text-align: left;">525,066</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Jacksonville</td>
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">56.11%</td>
+<td style="text-align: left;">835,319</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Orlando</td>
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">55.25%</td>
+<td style="text-align: left;">264,979</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-15-locations-by-vcpm-53k-viewable-impressions" class="level3">
+<h3 class="anchored" data-anchor-id="top-15-locations-by-vcpm-53k-viewable-impressions">Top 15 Locations by vCPM (&gt;~53k viewable impressions)</h3>
+<table class="caption-top table" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">City</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">State</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Average vCPM</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Total Viewable Impressions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Lafayette</td>
+<td style="text-align: left;">Indiana</td>
+<td style="text-align: left;">$13.14</td>
+<td style="text-align: left;">364,305</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Toledo</td>
+<td style="text-align: left;">Ohio</td>
+<td style="text-align: left;">$21.53</td>
+<td style="text-align: left;">155,722</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Shreveport</td>
+<td style="text-align: left;">Louisiana</td>
+<td style="text-align: left;">$44.53</td>
+<td style="text-align: left;">74,662</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Chicago</td>
+<td style="text-align: left;">Illinois</td>
+<td style="text-align: left;">$45.04</td>
+<td style="text-align: left;">14,123,143</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Los Angeles</td>
+<td style="text-align: left;">California</td>
+<td style="text-align: left;">$45.43</td>
+<td style="text-align: left;">6,868,247</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">San Francisco</td>
+<td style="text-align: left;">California</td>
+<td style="text-align: left;">$59.79</td>
+<td style="text-align: left;">3,704,351</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ft. Wayne</td>
+<td style="text-align: left;">Indiana</td>
+<td style="text-align: left;">$64.29</td>
+<td style="text-align: left;">293,919</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Miami</td>
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">$64.34</td>
+<td style="text-align: left;">3,118,842</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Tri-Cities</td>
+<td style="text-align: left;">Tennessee</td>
+<td style="text-align: left;">$65.92</td>
+<td style="text-align: left;">210,839</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Memphis</td>
+<td style="text-align: left;">Tennessee</td>
+<td style="text-align: left;">$69.72</td>
+<td style="text-align: left;">525,066</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ft. Myers</td>
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">$71.60</td>
+<td style="text-align: left;">642,779</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Jackson</td>
+<td style="text-align: left;">Mississippi</td>
+<td style="text-align: left;">$72.71</td>
+<td style="text-align: left;">159,011</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Charleston</td>
+<td style="text-align: left;">South Carolina</td>
+<td style="text-align: left;">$79.04</td>
+<td style="text-align: left;">211,878</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">New York City</td>
+<td style="text-align: left;">New York</td>
+<td style="text-align: left;">$79.06</td>
+<td style="text-align: left;">5,251,481</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Nashville</td>
+<td style="text-align: left;">Tennessee</td>
+<td style="text-align: left;">$79.72</td>
+<td style="text-align: left;">2,295,337</td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="coop_capstone_eda_spatial_files/figure-html/city%20branding%20metrics%20-%20plots%20with%20labels-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="coop_capstone_eda_spatial_files/figure-html/city%20branding%20metrics%20-%20plots%20with%20labels-2.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="coop_capstone_eda_spatial_files/figure-html/city%20branding%20metrics%20-%20plots%20with%20labels-3.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="observations-for-identify-which-locations-were-the-most-cost-effective" class="level2">
+<h2 class="anchored" data-anchor-id="observations-for-identify-which-locations-were-the-most-cost-effective">Observations for “Identify which locations were the most cost effective”</h2>
+<section id="looking-at-pure-average-cpa-per-location" class="level3">
+<h3 class="anchored" data-anchor-id="looking-at-pure-average-cpa-per-location"><strong><em>Looking at pure average CPA per location:</em></strong></h3>
+<p>Generally, we have a large range of numbers.</p>
+<p><strong>In terms of “pure” CPA</strong>, looking at performance metrics first we can see that <strong>Lafayette</strong> costs the least per acquisition, and conversion rate/cost per click is also pretty good in comparison to a lot of other places. <strong>Lafayette</strong> also has the lowest vCPM, so we know that, in terms of pure viewable cost per thousand, we’re doing great for cost effectiveness. In terms of high conversion rates, as well as <strong>low avg CPA and middling avg CPC</strong>, we see <strong>Ft. Wayne, Panama City, and Augusta</strong>, all of which have great numbers. Per acquisition, they’re relatively low; conversion rates are higher than the usual numbers. <strong>South Bend</strong> and <strong>Mobile</strong> are also interesting because they have <strong>great avg CPA/CVR numbers</strong>, but their CPCs are a lot higher than the other 20 most cost-effective locations. <strong>West Palm Beach</strong> is also awesome numbers wise, but the <strong>CPA is right in the middle, even if the CVR/CPC rates are better</strong>.</p>
+<p>If we look at avg branding metrics per city/location, then things start to change.</p>
+</section>
+<section id="looking-at-average-click-through-rates" class="level3">
+<h3 class="anchored" data-anchor-id="looking-at-average-click-through-rates"><strong><em>Looking at average click-through rates:</em></strong></h3>
+<p>Although cities like <strong>Champaign, Tampa, Grand Rapids, West Palm Beach</strong>, and <strong>Augusta</strong> have the highest click-through rates, this becomes a question of whether or not this is really worth it. Of those five cities, the only one that’s anywhere near the top 20 most cost-effective locations, by average CPA, is <strong>Augusta</strong>. Even then, <strong>Augusta</strong> is the 7th most cost-effective location, based on average CPA.</p>
+<p>Some other interesting finds are <strong>Ft. Wayne, Nashville, and South Bend</strong>. They’re all in the top 15 locations by click-through rate, at the <strong>11th, 12th, and 13th</strong> top locations by click-through rate (respectively) but also in the <strong>2nd</strong>, <strong>15th, and 12th</strong> most cost-effective locations by average CPA.</p>
+</section>
+<section id="looking-at-average-viewability-rates" class="level3">
+<h3 class="anchored" data-anchor-id="looking-at-average-viewability-rates"><strong><em>Looking at average viewability rates:</em></strong></h3>
+<p>If we look at <strong>viewability rates</strong>, some cities that we’re seeing, once again, are <strong>Toledo, Nashville, Los Angeles, Augusta, Chicago, Miami, and Memphis.</strong> Each of these cities are, in terms of pure viewability rate, <strong>1st, 4th, 5th, 6th, 8th, 11th, and 13th</strong> in terms of cities with the highest avg view rate. In terms of the most cost-effective cities by CPA, they rank <strong>5th, 4th, 14th, 7th, 11th, 8th, and 13th</strong>, respectively.</p>
+<p>So, we can see here that in terms of <strong>viewability rates</strong> and <strong>avg CPA, Toledo, Nashville, Augusta, Los Angeles, and Chicago</strong> are all great cities. Of note as well: <strong>Chicago</strong> had an insane number of total viewable impressions at around <strong>14.1 million.</strong> <strong>Los Angeles</strong> also had a ton, at just <strong>about</strong> <strong>6.8 million.</strong> In terms of the rest of the cities, <strong>Nashville</strong> <strong>had</strong> <strong>around</strong> <strong>2.3 million, Toledo had 155,722,</strong> and <strong>Augusta had</strong> <strong>106,963.</strong></p>
+<p>Something to keep in mind is that although <strong>Toledo</strong> had the highest average view rate, the number of total viewable impressions just wasn’t as high as <strong>Chicago/Los Angeles</strong>. Therefore, <strong>Toledo</strong> may have good general statistics but not a great number of total viewable impressions. As a sneak peek we can see that <strong>Toledo</strong> also has a low average <strong>vCPM</strong>, which would give off the impression it’s a great city to deploy ads to. Again, however, the number of total viewable impressions aren’t amazing, though.</p>
+<p><strong>Augusta</strong> was another “small city”: although <strong>average view rate was at 61.05%</strong>, the number of <strong>total viewable impressions was “only” 106,963</strong>.</p>
+<p>On the other hand, <strong>Los Angeles and Chicago</strong> had around a <strong>60%</strong> <strong>average view rate</strong> but had far more viewable impressions, in the millions. Even at being the <strong>14th and 11th</strong> most cost-effective locations, they still brought in a very good amount of views.</p>
+<p>To close out this discussion: although we need to talk about average vCPM, there is no “perfect” city, but rather a lot of “in between” cities in terms of cost vs.&nbsp;branding metrics.</p>
+</section>
+<section id="looking-at-average-vcpm-or-viewable-cost-per-millethousand" class="level3">
+<h3 class="anchored" data-anchor-id="looking-at-average-vcpm-or-viewable-cost-per-millethousand"><strong><em>Looking at average vCPM, or (v)iewable Cost Per Mille/Thousand:</em></strong></h3>
+<p>So, let’s look at average vCPM (which should, in theory, should kind of go hand in hand with average CPA, right). We can think of vCPM as the cost of just… having our ads <em>potentially seen</em>, while avg CPA refers to the cost of “actual conversions”, in a sense.</p>
+<p>Some particular standouts, once again, are <strong>Lafayette, Toledo, Chicago, Los Angeles, San Francisco, Ft. Wayne, Miami, Memphis, and Nashvile.</strong> I would say Shreveport is a standout, but given the context of the rest of what we’ve looked at so far, it’s not a <em>standout</em>, per se. Although average vCPM is low, so is the number of total viewable impressions.</p>
+<p>Now that we’ve seen all the general “cost effective” metrics, we can start to break things down in full.</p>
+</section>
+</section>
+<section id="so-what-citieslocations-work-across-the-board" class="level2">
+<h2 class="anchored" data-anchor-id="so-what-citieslocations-work-across-the-board"><strong><em>So, what cities/locations work across the board?</em></strong></h2>
+<p>I think there’s three main general “tiers” of cities.</p>
+<section id="the-best-all-around-markets" class="level3">
+<h3 class="anchored" data-anchor-id="the-best-all-around-markets"><strong>The “best all-around markets”:</strong></h3>
+<ul>
+<li><p>disclaimer: when metrics mentioned, it’s usually mentioning average metric, not median/50th percentile (also i asked gemini to summarize a lot of this, but i wrote the stuff before this section)</p></li>
+<li><p><strong>Augusta</strong> is a great city, and appears on most of the “top” lists with a low(ish) avg CPA, high avg CVR, high CTR, high average view rate, and low vCPM.</p>
+<ul>
+<li>Its main weakness is lower scale: Augusta only really had <strong>106,963</strong> total viewable impressions.</li>
+</ul></li>
+<li><p><strong>Ft. Wayne</strong> is another great city: it has low CPA, high CVR, relatively good engagement (11th by CTR), and it’s also pretty cheap for branding (nowhere to be found for top viewability rate, but relatively low vCPM).</p>
+<ul>
+<li>Its main weakness is also scale <strong>(only 293,919 viewable impressions)</strong> and that the average view rate was quite low</li>
+</ul></li>
+<li><p><strong>Nashville</strong> was another great balanced contender, being cost-effective in CPA, relatively high engaging (12th in CTR), and a high average view rate (14th). Nashville was totally one of the larger cities, or at least, had a larger number of total viewable impressions at around <strong>2.3 million total viewable impressions.</strong> It also had a relatively low vCPM, coming in at the 15th “cheapest” in terms of vCPM.</p></li>
+<li><p><strong>Lafayette</strong> was great in terms of pure average CPA and vCPM, coming in at number one.</p>
+<ul>
+<li><p>Unfortunately, the total viewable impressions was somewhat low, and it didn’t come up in viewability rate, or average CTR.</p></li>
+<li><p>Therefore, by nature, the actual view rate wasn’t great.</p></li>
+<li><p>However, in terms of the entire dataset, in terms of a smaller market, it had the <strong>lowest CPA</strong> and lowest <strong>vCPM.</strong></p></li>
+</ul></li>
+</ul>
+</section>
+<section id="scale-vs.-efficiency" class="level3">
+<h3 class="anchored" data-anchor-id="scale-vs.-efficiency"><strong>Scale vs.&nbsp;Efficiency</strong></h3>
+<ul>
+<li><p>So, to start off: let’s talk about <strong>high volume, “good-enough cost”/major cities</strong></p>
+<ul>
+<li><strong>Chicago</strong> and <strong>Los Angeles</strong> have lots of impressions, which makes sense because they <strong>are</strong> major cities. Both cities had lots of viewable impressions as well as viewability rates. Although their CPAs weren’t great (11th and 14th, respectively), their vCPMs were in the top 10. Therefore, we could consider both of them <strong>“high volume”</strong> and <strong>“good-enough cost”</strong></li>
+</ul></li>
+<li><p>Next, we have the <strong>low volume</strong> but <strong>great general stats cities</strong></p>
+<ul>
+<li><strong>Toledo</strong> was a very “cheap” city in general, being 5th in CPA and 2nd in vCPM. However, <strong>Toledo</strong> didn’t have many viewable impressions, coming in at around 155,722. However, one weakness was that click through rate wasn’t great. Hence, <strong>Toledo</strong> had super <strong>low volume</strong> but great general stats</li>
+</ul></li>
+</ul>
+</section>
+<section id="branding-only" class="level3">
+<h3 class="anchored" data-anchor-id="branding-only"><strong>Branding Only</strong></h3>
+<ul>
+<li><p>dawg i’m tired</p></li>
+<li><p><strong>Champaign, Tampa, and Grand Rapids</strong> have great CTRs but aren’t cost effective at all.</p>
+<ul>
+<li>Hence, although they have good engagement the conversions aren’t great, and they’re expensive</li>
+</ul></li>
+</ul>
+</section>
+<section id="diagnostic-casesflawed-cases" class="level3">
+<h3 class="anchored" data-anchor-id="diagnostic-casesflawed-cases"><strong>“Diagnostic Cases”/Flawed Cases</strong></h3>
+<ul>
+<li><p><strong>South Bend</strong> and <strong>Mobile</strong> have great average CPA/CVR numbers but their CPCs are way higher</p>
+<ul>
+<li><p>The ad marketplace is quite… expensive, cost per click is really bad compared to other places</p></li>
+<li><p>So, even though the cost per acquisition and conversion rates are generally pretty good, it’s just so expensive to get <strong><em>clicks</em></strong>, this could be for a variety of reasons</p></li>
+</ul></li>
+</ul>
+<hr>
+</section>
+</section>
+</section>
+<section id="what-are-the-topbottom-performing-states" class="level1">
+<h1>What are the top/bottom performing States?</h1>
+<section id="identifying-state-cost-effectiveness-by-cpaconversionsclicksimpressionscpacvrcpc" class="level2">
+<h2 class="anchored" data-anchor-id="identifying-state-cost-effectiveness-by-cpaconversionsclicksimpressionscpacvrcpc">Identifying State Cost Effectiveness By CPA/Conversions/Clicks/Impressions/CPA/CVR/CPC</h2>
+<section id="top-10-states-by-total-conversions" class="level3">
+<h3 class="anchored" data-anchor-id="top-10-states-by-total-conversions">Top 10 States by Total Conversions</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+state
+</th>
+<th style="text-align:left;">
+total conversions
+</th>
+<th style="text-align:left;">
+total cost
+</th>
+<th style="text-align:left;">
+total clicks
+</th>
+<th style="text-align:left;">
+total impressions
+</th>
+<th style="text-align:left;">
+state cpa
+</th>
+<th style="text-align:left;">
+state conv. rate
+</th>
+<th style="text-align:left;">
+state ctr
+</th>
+<th style="text-align:left;">
+avg. cpc
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Illinois
+</td>
+<td style="text-align:left;">
+2,257
+</td>
+<td style="text-align:left;">
+$681,715.82
+</td>
+<td style="text-align:left;">
+69,176
+</td>
+<td style="text-align:left;">
+27,857,546
+</td>
+<td style="text-align:left;">
+$302.05
+</td>
+<td style="text-align:left;">
+3.26%
+</td>
+<td style="text-align:left;">
+0.25%
+</td>
+<td style="text-align:left;">
+$9.85
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+1,588
+</td>
+<td style="text-align:left;">
+$557,527.49
+</td>
+<td style="text-align:left;">
+36,764
+</td>
+<td style="text-align:left;">
+12,361,492
+</td>
+<td style="text-align:left;">
+$351.09
+</td>
+<td style="text-align:left;">
+4.32%
+</td>
+<td style="text-align:left;">
+0.30%
+</td>
+<td style="text-align:left;">
+$15.17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+New York
+</td>
+<td style="text-align:left;">
+1,500
+</td>
+<td style="text-align:left;">
+$415,179.27
+</td>
+<td style="text-align:left;">
+35,141
+</td>
+<td style="text-align:left;">
+12,389,658
+</td>
+<td style="text-align:left;">
+$276.79
+</td>
+<td style="text-align:left;">
+4.27%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$11.81
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+California
+</td>
+<td style="text-align:left;">
+1,437
+</td>
+<td style="text-align:left;">
+$533,482.86
+</td>
+<td style="text-align:left;">
+55,756
+</td>
+<td style="text-align:left;">
+20,155,086
+</td>
+<td style="text-align:left;">
+$371.25
+</td>
+<td style="text-align:left;">
+2.58%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$9.57
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Tennessee
+</td>
+<td style="text-align:left;">
+807
+</td>
+<td style="text-align:left;">
+$300,901.43
+</td>
+<td style="text-align:left;">
+17,186
+</td>
+<td style="text-align:left;">
+6,235,010
+</td>
+<td style="text-align:left;">
+$372.86
+</td>
+<td style="text-align:left;">
+4.70%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$17.51
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Indiana
+</td>
+<td style="text-align:left;">
+315
+</td>
+<td style="text-align:left;">
+$49,877.60
+</td>
+<td style="text-align:left;">
+4,811
+</td>
+<td style="text-align:left;">
+1,901,207
+</td>
+<td style="text-align:left;">
+$158.34
+</td>
+<td style="text-align:left;">
+6.55%
+</td>
+<td style="text-align:left;">
+0.25%
+</td>
+<td style="text-align:left;">
+$10.37
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Michigan
+</td>
+<td style="text-align:left;">
+306
+</td>
+<td style="text-align:left;">
+$134,787.71
+</td>
+<td style="text-align:left;">
+7,456
+</td>
+<td style="text-align:left;">
+2,424,081
+</td>
+<td style="text-align:left;">
+$440.48
+</td>
+<td style="text-align:left;">
+4.10%
+</td>
+<td style="text-align:left;">
+0.31%
+</td>
+<td style="text-align:left;">
+$18.08
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Georgia
+</td>
+<td style="text-align:left;">
+103
+</td>
+<td style="text-align:left;">
+$37,542.87
+</td>
+<td style="text-align:left;">
+2,045
+</td>
+<td style="text-align:left;">
+724,339
+</td>
+<td style="text-align:left;">
+$364.49
+</td>
+<td style="text-align:left;">
+5.04%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$18.36
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mississippi
+</td>
+<td style="text-align:left;">
+41
+</td>
+<td style="text-align:left;">
+$13,514.86
+</td>
+<td style="text-align:left;">
+1,077
+</td>
+<td style="text-align:left;">
+390,185
+</td>
+<td style="text-align:left;">
+$329.63
+</td>
+<td style="text-align:left;">
+3.81%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$12.55
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Alabama
+</td>
+<td style="text-align:left;">
+38
+</td>
+<td style="text-align:left;">
+$17,057.42
+</td>
+<td style="text-align:left;">
+693
+</td>
+<td style="text-align:left;">
+183,819
+</td>
+<td style="text-align:left;">
+$448.88
+</td>
+<td style="text-align:left;">
+5.48%
+</td>
+<td style="text-align:left;">
+0.38%
+</td>
+<td style="text-align:left;">
+$24.61
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="bottom-10-states-by-total-conversions" class="level3">
+<h3 class="anchored" data-anchor-id="bottom-10-states-by-total-conversions">Bottom 10 States by Total Conversions</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+state
+</th>
+<th style="text-align:left;">
+total conversions
+</th>
+<th style="text-align:left;">
+total cost
+</th>
+<th style="text-align:left;">
+total clicks
+</th>
+<th style="text-align:left;">
+total impressions
+</th>
+<th style="text-align:left;">
+state cpa
+</th>
+<th style="text-align:left;">
+state conv. rate
+</th>
+<th style="text-align:left;">
+state ctr
+</th>
+<th style="text-align:left;">
+avg. cpc
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Louisiana
+</td>
+<td style="text-align:left;">
+6
+</td>
+<td style="text-align:left;">
+$3,324.74
+</td>
+<td style="text-align:left;">
+652
+</td>
+<td style="text-align:left;">
+234,889
+</td>
+<td style="text-align:left;">
+$554.12
+</td>
+<td style="text-align:left;">
+0.92%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$5.10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Arkansas
+</td>
+<td style="text-align:left;">
+12
+</td>
+<td style="text-align:left;">
+$4,594.60
+</td>
+<td style="text-align:left;">
+30
+</td>
+<td style="text-align:left;">
+9,319
+</td>
+<td style="text-align:left;">
+$382.88
+</td>
+<td style="text-align:left;">
+40.00%
+</td>
+<td style="text-align:left;">
+0.32%
+</td>
+<td style="text-align:left;">
+$153.15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Kentucky
+</td>
+<td style="text-align:left;">
+15
+</td>
+<td style="text-align:left;">
+$2,753.71
+</td>
+<td style="text-align:left;">
+174
+</td>
+<td style="text-align:left;">
+68,114
+</td>
+<td style="text-align:left;">
+$183.58
+</td>
+<td style="text-align:left;">
+8.62%
+</td>
+<td style="text-align:left;">
+0.26%
+</td>
+<td style="text-align:left;">
+$15.83
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ohio
+</td>
+<td style="text-align:left;">
+20
+</td>
+<td style="text-align:left;">
+$4,866.25
+</td>
+<td style="text-align:left;">
+707
+</td>
+<td style="text-align:left;">
+256,526
+</td>
+<td style="text-align:left;">
+$243.31
+</td>
+<td style="text-align:left;">
+2.83%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$6.88
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+South Carolina
+</td>
+<td style="text-align:left;">
+29
+</td>
+<td style="text-align:left;">
+$16,746.37
+</td>
+<td style="text-align:left;">
+1,431
+</td>
+<td style="text-align:left;">
+514,043
+</td>
+<td style="text-align:left;">
+$577.46
+</td>
+<td style="text-align:left;">
+2.03%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$11.70
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Alabama
+</td>
+<td style="text-align:left;">
+38
+</td>
+<td style="text-align:left;">
+$17,057.42
+</td>
+<td style="text-align:left;">
+693
+</td>
+<td style="text-align:left;">
+183,819
+</td>
+<td style="text-align:left;">
+$448.88
+</td>
+<td style="text-align:left;">
+5.48%
+</td>
+<td style="text-align:left;">
+0.38%
+</td>
+<td style="text-align:left;">
+$24.61
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mississippi
+</td>
+<td style="text-align:left;">
+41
+</td>
+<td style="text-align:left;">
+$13,514.86
+</td>
+<td style="text-align:left;">
+1,077
+</td>
+<td style="text-align:left;">
+390,185
+</td>
+<td style="text-align:left;">
+$329.63
+</td>
+<td style="text-align:left;">
+3.81%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$12.55
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Georgia
+</td>
+<td style="text-align:left;">
+103
+</td>
+<td style="text-align:left;">
+$37,542.87
+</td>
+<td style="text-align:left;">
+2,045
+</td>
+<td style="text-align:left;">
+724,339
+</td>
+<td style="text-align:left;">
+$364.49
+</td>
+<td style="text-align:left;">
+5.04%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$18.36
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Michigan
+</td>
+<td style="text-align:left;">
+306
+</td>
+<td style="text-align:left;">
+$134,787.71
+</td>
+<td style="text-align:left;">
+7,456
+</td>
+<td style="text-align:left;">
+2,424,081
+</td>
+<td style="text-align:left;">
+$440.48
+</td>
+<td style="text-align:left;">
+4.10%
+</td>
+<td style="text-align:left;">
+0.31%
+</td>
+<td style="text-align:left;">
+$18.08
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Indiana
+</td>
+<td style="text-align:left;">
+315
+</td>
+<td style="text-align:left;">
+$49,877.60
+</td>
+<td style="text-align:left;">
+4,811
+</td>
+<td style="text-align:left;">
+1,901,207
+</td>
+<td style="text-align:left;">
+$158.34
+</td>
+<td style="text-align:left;">
+6.55%
+</td>
+<td style="text-align:left;">
+0.25%
+</td>
+<td style="text-align:left;">
+$10.37
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-10-states-by-cost-effectiveness-lowest-cpa-5-conversions" class="level3">
+<h3 class="anchored" data-anchor-id="top-10-states-by-cost-effectiveness-lowest-cpa-5-conversions">Top 10 States by Cost-Effectiveness (Lowest CPA, &gt;= 5 Conversions)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+state
+</th>
+<th style="text-align:left;">
+total conversions
+</th>
+<th style="text-align:left;">
+total cost
+</th>
+<th style="text-align:left;">
+total clicks
+</th>
+<th style="text-align:left;">
+total impressions
+</th>
+<th style="text-align:left;">
+state cpa
+</th>
+<th style="text-align:left;">
+state conv. rate
+</th>
+<th style="text-align:left;">
+state ctr
+</th>
+<th style="text-align:left;">
+avg. cpc
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Indiana
+</td>
+<td style="text-align:left;">
+315
+</td>
+<td style="text-align:left;">
+$49,877.60
+</td>
+<td style="text-align:left;">
+4,811
+</td>
+<td style="text-align:left;">
+1,901,207
+</td>
+<td style="text-align:left;">
+$158.34
+</td>
+<td style="text-align:left;">
+6.55%
+</td>
+<td style="text-align:left;">
+0.25%
+</td>
+<td style="text-align:left;">
+$10.37
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Kentucky
+</td>
+<td style="text-align:left;">
+15
+</td>
+<td style="text-align:left;">
+$2,753.71
+</td>
+<td style="text-align:left;">
+174
+</td>
+<td style="text-align:left;">
+68,114
+</td>
+<td style="text-align:left;">
+$183.58
+</td>
+<td style="text-align:left;">
+8.62%
+</td>
+<td style="text-align:left;">
+0.26%
+</td>
+<td style="text-align:left;">
+$15.83
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ohio
+</td>
+<td style="text-align:left;">
+20
+</td>
+<td style="text-align:left;">
+$4,866.25
+</td>
+<td style="text-align:left;">
+707
+</td>
+<td style="text-align:left;">
+256,526
+</td>
+<td style="text-align:left;">
+$243.31
+</td>
+<td style="text-align:left;">
+2.83%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$6.88
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+New York
+</td>
+<td style="text-align:left;">
+1,500
+</td>
+<td style="text-align:left;">
+$415,179.27
+</td>
+<td style="text-align:left;">
+35,141
+</td>
+<td style="text-align:left;">
+12,389,658
+</td>
+<td style="text-align:left;">
+$276.79
+</td>
+<td style="text-align:left;">
+4.27%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$11.81
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Illinois
+</td>
+<td style="text-align:left;">
+2,257
+</td>
+<td style="text-align:left;">
+$681,715.82
+</td>
+<td style="text-align:left;">
+69,176
+</td>
+<td style="text-align:left;">
+27,857,546
+</td>
+<td style="text-align:left;">
+$302.05
+</td>
+<td style="text-align:left;">
+3.26%
+</td>
+<td style="text-align:left;">
+0.25%
+</td>
+<td style="text-align:left;">
+$9.85
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mississippi
+</td>
+<td style="text-align:left;">
+41
+</td>
+<td style="text-align:left;">
+$13,514.86
+</td>
+<td style="text-align:left;">
+1,077
+</td>
+<td style="text-align:left;">
+390,185
+</td>
+<td style="text-align:left;">
+$329.63
+</td>
+<td style="text-align:left;">
+3.81%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$12.55
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+1,588
+</td>
+<td style="text-align:left;">
+$557,527.49
+</td>
+<td style="text-align:left;">
+36,764
+</td>
+<td style="text-align:left;">
+12,361,492
+</td>
+<td style="text-align:left;">
+$351.09
+</td>
+<td style="text-align:left;">
+4.32%
+</td>
+<td style="text-align:left;">
+0.30%
+</td>
+<td style="text-align:left;">
+$15.17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Georgia
+</td>
+<td style="text-align:left;">
+103
+</td>
+<td style="text-align:left;">
+$37,542.87
+</td>
+<td style="text-align:left;">
+2,045
+</td>
+<td style="text-align:left;">
+724,339
+</td>
+<td style="text-align:left;">
+$364.49
+</td>
+<td style="text-align:left;">
+5.04%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$18.36
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+California
+</td>
+<td style="text-align:left;">
+1,437
+</td>
+<td style="text-align:left;">
+$533,482.86
+</td>
+<td style="text-align:left;">
+55,756
+</td>
+<td style="text-align:left;">
+20,155,086
+</td>
+<td style="text-align:left;">
+$371.25
+</td>
+<td style="text-align:left;">
+2.58%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$9.57
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Tennessee
+</td>
+<td style="text-align:left;">
+807
+</td>
+<td style="text-align:left;">
+$300,901.43
+</td>
+<td style="text-align:left;">
+17,186
+</td>
+<td style="text-align:left;">
+6,235,010
+</td>
+<td style="text-align:left;">
+$372.86
+</td>
+<td style="text-align:left;">
+4.70%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$17.51
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="bottom-10-states-by-cost-effectiveness-highest-cpa-5-conversions" class="level3">
+<h3 class="anchored" data-anchor-id="bottom-10-states-by-cost-effectiveness-highest-cpa-5-conversions">Bottom 10 States by Cost-Effectiveness (Highest CPA, &gt;= 5 Conversions)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+state
+</th>
+<th style="text-align:left;">
+total conversions
+</th>
+<th style="text-align:left;">
+total cost
+</th>
+<th style="text-align:left;">
+total clicks
+</th>
+<th style="text-align:left;">
+total impressions
+</th>
+<th style="text-align:left;">
+state cpa
+</th>
+<th style="text-align:left;">
+state conv. rate
+</th>
+<th style="text-align:left;">
+state ctr
+</th>
+<th style="text-align:left;">
+avg. cpc
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+South Carolina
+</td>
+<td style="text-align:left;">
+29
+</td>
+<td style="text-align:left;">
+$16,746.37
+</td>
+<td style="text-align:left;">
+1,431
+</td>
+<td style="text-align:left;">
+514,043
+</td>
+<td style="text-align:left;">
+$577.46
+</td>
+<td style="text-align:left;">
+2.03%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$11.70
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Alabama
+</td>
+<td style="text-align:left;">
+38
+</td>
+<td style="text-align:left;">
+$17,057.42
+</td>
+<td style="text-align:left;">
+693
+</td>
+<td style="text-align:left;">
+183,819
+</td>
+<td style="text-align:left;">
+$448.88
+</td>
+<td style="text-align:left;">
+5.48%
+</td>
+<td style="text-align:left;">
+0.38%
+</td>
+<td style="text-align:left;">
+$24.61
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Michigan
+</td>
+<td style="text-align:left;">
+306
+</td>
+<td style="text-align:left;">
+$134,787.71
+</td>
+<td style="text-align:left;">
+7,456
+</td>
+<td style="text-align:left;">
+2,424,081
+</td>
+<td style="text-align:left;">
+$440.48
+</td>
+<td style="text-align:left;">
+4.10%
+</td>
+<td style="text-align:left;">
+0.31%
+</td>
+<td style="text-align:left;">
+$18.08
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Arkansas
+</td>
+<td style="text-align:left;">
+12
+</td>
+<td style="text-align:left;">
+$4,594.60
+</td>
+<td style="text-align:left;">
+30
+</td>
+<td style="text-align:left;">
+9,319
+</td>
+<td style="text-align:left;">
+$382.88
+</td>
+<td style="text-align:left;">
+40.00%
+</td>
+<td style="text-align:left;">
+0.32%
+</td>
+<td style="text-align:left;">
+$153.15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Tennessee
+</td>
+<td style="text-align:left;">
+807
+</td>
+<td style="text-align:left;">
+$300,901.43
+</td>
+<td style="text-align:left;">
+17,186
+</td>
+<td style="text-align:left;">
+6,235,010
+</td>
+<td style="text-align:left;">
+$372.86
+</td>
+<td style="text-align:left;">
+4.70%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$17.51
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+California
+</td>
+<td style="text-align:left;">
+1,437
+</td>
+<td style="text-align:left;">
+$533,482.86
+</td>
+<td style="text-align:left;">
+55,756
+</td>
+<td style="text-align:left;">
+20,155,086
+</td>
+<td style="text-align:left;">
+$371.25
+</td>
+<td style="text-align:left;">
+2.58%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$9.57
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Georgia
+</td>
+<td style="text-align:left;">
+103
+</td>
+<td style="text-align:left;">
+$37,542.87
+</td>
+<td style="text-align:left;">
+2,045
+</td>
+<td style="text-align:left;">
+724,339
+</td>
+<td style="text-align:left;">
+$364.49
+</td>
+<td style="text-align:left;">
+5.04%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$18.36
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+1,588
+</td>
+<td style="text-align:left;">
+$557,527.49
+</td>
+<td style="text-align:left;">
+36,764
+</td>
+<td style="text-align:left;">
+12,361,492
+</td>
+<td style="text-align:left;">
+$351.09
+</td>
+<td style="text-align:left;">
+4.32%
+</td>
+<td style="text-align:left;">
+0.30%
+</td>
+<td style="text-align:left;">
+$15.17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mississippi
+</td>
+<td style="text-align:left;">
+41
+</td>
+<td style="text-align:left;">
+$13,514.86
+</td>
+<td style="text-align:left;">
+1,077
+</td>
+<td style="text-align:left;">
+390,185
+</td>
+<td style="text-align:left;">
+$329.63
+</td>
+<td style="text-align:left;">
+3.81%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+$12.55
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Illinois
+</td>
+<td style="text-align:left;">
+2,257
+</td>
+<td style="text-align:left;">
+$681,715.82
+</td>
+<td style="text-align:left;">
+69,176
+</td>
+<td style="text-align:left;">
+27,857,546
+</td>
+<td style="text-align:left;">
+$302.05
+</td>
+<td style="text-align:left;">
+3.26%
+</td>
+<td style="text-align:left;">
+0.25%
+</td>
+<td style="text-align:left;">
+$9.85
+</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="identifying-direct-response-dr-performance-metrics-cvr-cpc-per-state" class="level2">
+<h2 class="anchored" data-anchor-id="identifying-direct-response-dr-performance-metrics-cvr-cpc-per-state">Identifying Direct Response (DR) Performance Metrics (CVR, CPC) Per State</h2>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Name</td>
+<td style="text-align: left;">select(state_performance,…</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Number of rows</td>
+<td style="text-align: left;">15</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Number of columns</td>
+<td style="text-align: left;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">_______________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Column type frequency:</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">________________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Group variables</td>
+<td style="text-align: left;">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 9%">
+<col style="width: 13%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 7%">
+<col style="width: 8%">
+<col style="width: 7%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">p0</th>
+<th style="text-align: right;">p25</th>
+<th style="text-align: right;">p50</th>
+<th style="text-align: right;">p75</th>
+<th style="text-align: right;">p100</th>
+<th style="text-align: left;">hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">total_clicks</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">15539.93</td>
+<td style="text-align: right;">22742.52</td>
+<td style="text-align: right;">30.00</td>
+<td style="text-align: right;">7e+02</td>
+<td style="text-align: right;">2045.00</td>
+<td style="text-align: right;">26163.50</td>
+<td style="text-align: right;">69176.0</td>
+<td style="text-align: left;">▇▁▂▁▂</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">state_conv_rate</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.09</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">3e-02</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">0.4</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<section id="top-10-states-by-conversion-rate-best-audience-quality-700-clicks" class="level3">
+<h3 class="anchored" data-anchor-id="top-10-states-by-conversion-rate-best-audience-quality-700-clicks">top 10 states by conversion rate (best audience quality, &gt;700 clicks)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+state
+</th>
+<th style="text-align:left;">
+avg. conversion rate
+</th>
+<th style="text-align:left;">
+total conversions
+</th>
+<th style="text-align:left;">
+total clicks
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Indiana
+</td>
+<td style="text-align:left;">
+6.55%
+</td>
+<td style="text-align:left;">
+315
+</td>
+<td style="text-align:left;">
+4,811
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Georgia
+</td>
+<td style="text-align:left;">
+5.04%
+</td>
+<td style="text-align:left;">
+103
+</td>
+<td style="text-align:left;">
+2,045
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Tennessee
+</td>
+<td style="text-align:left;">
+4.70%
+</td>
+<td style="text-align:left;">
+807
+</td>
+<td style="text-align:left;">
+17,186
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+4.32%
+</td>
+<td style="text-align:left;">
+1,588
+</td>
+<td style="text-align:left;">
+36,764
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+New York
+</td>
+<td style="text-align:left;">
+4.27%
+</td>
+<td style="text-align:left;">
+1,500
+</td>
+<td style="text-align:left;">
+35,141
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Michigan
+</td>
+<td style="text-align:left;">
+4.10%
+</td>
+<td style="text-align:left;">
+306
+</td>
+<td style="text-align:left;">
+7,456
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mississippi
+</td>
+<td style="text-align:left;">
+3.81%
+</td>
+<td style="text-align:left;">
+41
+</td>
+<td style="text-align:left;">
+1,077
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Illinois
+</td>
+<td style="text-align:left;">
+3.26%
+</td>
+<td style="text-align:left;">
+2,257
+</td>
+<td style="text-align:left;">
+69,176
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ohio
+</td>
+<td style="text-align:left;">
+2.83%
+</td>
+<td style="text-align:left;">
+20
+</td>
+<td style="text-align:left;">
+707
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+California
+</td>
+<td style="text-align:left;">
+2.58%
+</td>
+<td style="text-align:left;">
+1,437
+</td>
+<td style="text-align:left;">
+55,756
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="bottom-10-states-by-conversion-rate-worst-audience-quality-700-clicks" class="level3">
+<h3 class="anchored" data-anchor-id="bottom-10-states-by-conversion-rate-worst-audience-quality-700-clicks">bottom 10 states by conversion rate (worst audience quality, &gt;700 clicks)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+state
+</th>
+<th style="text-align:left;">
+avg. conversion rate
+</th>
+<th style="text-align:left;">
+total conversions
+</th>
+<th style="text-align:left;">
+total clicks
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+South Carolina
+</td>
+<td style="text-align:left;">
+2.03%
+</td>
+<td style="text-align:left;">
+29
+</td>
+<td style="text-align:left;">
+1,431
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+California
+</td>
+<td style="text-align:left;">
+2.58%
+</td>
+<td style="text-align:left;">
+1,437
+</td>
+<td style="text-align:left;">
+55,756
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Ohio
+</td>
+<td style="text-align:left;">
+2.83%
+</td>
+<td style="text-align:left;">
+20
+</td>
+<td style="text-align:left;">
+707
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Illinois
+</td>
+<td style="text-align:left;">
+3.26%
+</td>
+<td style="text-align:left;">
+2,257
+</td>
+<td style="text-align:left;">
+69,176
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mississippi
+</td>
+<td style="text-align:left;">
+3.81%
+</td>
+<td style="text-align:left;">
+41
+</td>
+<td style="text-align:left;">
+1,077
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Michigan
+</td>
+<td style="text-align:left;">
+4.10%
+</td>
+<td style="text-align:left;">
+306
+</td>
+<td style="text-align:left;">
+7,456
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+New York
+</td>
+<td style="text-align:left;">
+4.27%
+</td>
+<td style="text-align:left;">
+1,500
+</td>
+<td style="text-align:left;">
+35,141
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+4.32%
+</td>
+<td style="text-align:left;">
+1,588
+</td>
+<td style="text-align:left;">
+36,764
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Tennessee
+</td>
+<td style="text-align:left;">
+4.70%
+</td>
+<td style="text-align:left;">
+807
+</td>
+<td style="text-align:left;">
+17,186
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Georgia
+</td>
+<td style="text-align:left;">
+5.04%
+</td>
+<td style="text-align:left;">
+103
+</td>
+<td style="text-align:left;">
+2,045
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-10-states-by-cpc-cheapest-traffic-700-clicks" class="level3">
+<h3 class="anchored" data-anchor-id="top-10-states-by-cpc-cheapest-traffic-700-clicks">top 10 states by cpc (cheapest traffic, &gt;700 clicks)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+state
+</th>
+<th style="text-align:left;">
+avg. cpc
+</th>
+<th style="text-align:left;">
+total clicks
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Ohio
+</td>
+<td style="text-align:left;">
+$6.88
+</td>
+<td style="text-align:left;">
+707
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+California
+</td>
+<td style="text-align:left;">
+$9.57
+</td>
+<td style="text-align:left;">
+55,756
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Illinois
+</td>
+<td style="text-align:left;">
+$9.85
+</td>
+<td style="text-align:left;">
+69,176
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Indiana
+</td>
+<td style="text-align:left;">
+$10.37
+</td>
+<td style="text-align:left;">
+4,811
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+South Carolina
+</td>
+<td style="text-align:left;">
+$11.70
+</td>
+<td style="text-align:left;">
+1,431
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+New York
+</td>
+<td style="text-align:left;">
+$11.81
+</td>
+<td style="text-align:left;">
+35,141
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mississippi
+</td>
+<td style="text-align:left;">
+$12.55
+</td>
+<td style="text-align:left;">
+1,077
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+$15.17
+</td>
+<td style="text-align:left;">
+36,764
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Tennessee
+</td>
+<td style="text-align:left;">
+$17.51
+</td>
+<td style="text-align:left;">
+17,186
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Michigan
+</td>
+<td style="text-align:left;">
+$18.08
+</td>
+<td style="text-align:left;">
+7,456
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="bottom-10-states-by-cpc-most-expensive-traffic-700-clicks" class="level3">
+<h3 class="anchored" data-anchor-id="bottom-10-states-by-cpc-most-expensive-traffic-700-clicks">bottom 10 states by cpc (most expensive traffic, &gt;700 clicks)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+state
+</th>
+<th style="text-align:left;">
+avg. cpc
+</th>
+<th style="text-align:left;">
+total clicks
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Georgia
+</td>
+<td style="text-align:left;">
+$18.36
+</td>
+<td style="text-align:left;">
+2,045
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Michigan
+</td>
+<td style="text-align:left;">
+$18.08
+</td>
+<td style="text-align:left;">
+7,456
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Tennessee
+</td>
+<td style="text-align:left;">
+$17.51
+</td>
+<td style="text-align:left;">
+17,186
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Florida
+</td>
+<td style="text-align:left;">
+$15.17
+</td>
+<td style="text-align:left;">
+36,764
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mississippi
+</td>
+<td style="text-align:left;">
+$12.55
+</td>
+<td style="text-align:left;">
+1,077
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+New York
+</td>
+<td style="text-align:left;">
+$11.81
+</td>
+<td style="text-align:left;">
+35,141
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+South Carolina
+</td>
+<td style="text-align:left;">
+$11.70
+</td>
+<td style="text-align:left;">
+1,431
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Indiana
+</td>
+<td style="text-align:left;">
+$10.37
+</td>
+<td style="text-align:left;">
+4,811
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Illinois
+</td>
+<td style="text-align:left;">
+$9.85
+</td>
+<td style="text-align:left;">
+69,176
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+California
+</td>
+<td style="text-align:left;">
+$9.57
+</td>
+<td style="text-align:left;">
+55,756
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="identifying-branding-metrics-avg-ctrviewabilityvcpm-per-state" class="level2">
+<h2 class="anchored" data-anchor-id="identifying-branding-metrics-avg-ctrviewabilityvcpm-per-state">Identifying Branding Metrics (Avg CTR/Viewability/vCPM) Per State</h2>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Name</td>
+<td style="text-align: left;">select(…)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Number of rows</td>
+<td style="text-align: left;">15</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Number of columns</td>
+<td style="text-align: left;">5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">_______________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Column type frequency:</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">________________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Group variables</td>
+<td style="text-align: left;">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 22%">
+<col style="width: 7%">
+<col style="width: 10%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 8%">
+<col style="width: 4%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">p0</th>
+<th style="text-align: right;">p25</th>
+<th style="text-align: right;">p50</th>
+<th style="text-align: right;">p75</th>
+<th style="text-align: right;">p100</th>
+<th style="text-align: left;">hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">total_impressions</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">5713687.60</td>
+<td style="text-align: right;">8653462.70</td>
+<td style="text-align: right;">9319.00</td>
+<td style="text-align: right;">245707.50</td>
+<td style="text-align: right;">724339.00</td>
+<td style="text-align: right;">9298251.0</td>
+<td style="text-align: right;">27857546.0</td>
+<td style="text-align: left;">▇▁▂▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">total_measurable_impressions</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">4944847.00</td>
+<td style="text-align: right;">7544754.08</td>
+<td style="text-align: right;">2059.00</td>
+<td style="text-align: right;">199085.00</td>
+<td style="text-align: right;">426607.00</td>
+<td style="text-align: right;">8182334.5</td>
+<td style="text-align: right;">24108511.0</td>
+<td style="text-align: left;">▇▁▂▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">total_viewable_impressions</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2793112.73</td>
+<td style="text-align: right;">4433338.52</td>
+<td style="text-align: right;">569.00</td>
+<td style="text-align: right;">111263.00</td>
+<td style="text-align: right;">211878.00</td>
+<td style="text-align: right;">4322956.0</td>
+<td style="text-align: right;">14316060.0</td>
+<td style="text-align: left;">▇▂▁▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">total_clicks</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">15539.93</td>
+<td style="text-align: right;">22742.52</td>
+<td style="text-align: right;">30.00</td>
+<td style="text-align: right;">700.00</td>
+<td style="text-align: right;">2045.00</td>
+<td style="text-align: right;">26163.5</td>
+<td style="text-align: right;">69176.0</td>
+<td style="text-align: left;">▇▁▂▁▂</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">total_gross_cost</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">184924.87</td>
+<td style="text-align: right;">243928.73</td>
+<td style="text-align: right;">2753.71</td>
+<td style="text-align: right;">9190.56</td>
+<td style="text-align: right;">37542.87</td>
+<td style="text-align: right;">358040.3</td>
+<td style="text-align: right;">681715.8</td>
+<td style="text-align: left;">▇▁▁▂▂</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<section id="top-10-states-by-click-through-rate-ctr-246k-impressions" class="level3">
+<h3 class="anchored" data-anchor-id="top-10-states-by-click-through-rate-ctr-246k-impressions">top 10 states by click-through rate (ctr, &gt;~246k impressions)</h3>
+<table class="caption-top table" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">state</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">avg. ctr</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">total clicks</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">total impressions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Michigan</td>
+<td style="text-align: left;">0.31%</td>
+<td style="text-align: left;">7,456</td>
+<td style="text-align: left;">2,424,081</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">0.30%</td>
+<td style="text-align: left;">36,764</td>
+<td style="text-align: left;">12,361,492</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">New York</td>
+<td style="text-align: left;">0.28%</td>
+<td style="text-align: left;">35,141</td>
+<td style="text-align: left;">12,389,658</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Georgia</td>
+<td style="text-align: left;">0.28%</td>
+<td style="text-align: left;">2,045</td>
+<td style="text-align: left;">724,339</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">South Carolina</td>
+<td style="text-align: left;">0.28%</td>
+<td style="text-align: left;">1,431</td>
+<td style="text-align: left;">514,043</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">California</td>
+<td style="text-align: left;">0.28%</td>
+<td style="text-align: left;">55,756</td>
+<td style="text-align: left;">20,155,086</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Mississippi</td>
+<td style="text-align: left;">0.28%</td>
+<td style="text-align: left;">1,077</td>
+<td style="text-align: left;">390,185</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Tennessee</td>
+<td style="text-align: left;">0.28%</td>
+<td style="text-align: left;">17,186</td>
+<td style="text-align: left;">6,235,010</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ohio</td>
+<td style="text-align: left;">0.28%</td>
+<td style="text-align: left;">707</td>
+<td style="text-align: left;">256,526</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Indiana</td>
+<td style="text-align: left;">0.25%</td>
+<td style="text-align: left;">4,811</td>
+<td style="text-align: left;">1,901,207</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-10-states-by-viewability-rate-199k-measurable-impressions" class="level3">
+<h3 class="anchored" data-anchor-id="top-10-states-by-viewability-rate-199k-measurable-impressions">top 10 states by viewability rate (&gt;~199k measurable impressions)</h3>
+<table class="caption-top table" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">state</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">avg. view rate</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">viewable impressions</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">measurable impressions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Ohio</td>
+<td style="text-align: left;">77.08%</td>
+<td style="text-align: left;">173,768</td>
+<td style="text-align: left;">225,428</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Mississippi</td>
+<td style="text-align: left;">68.66%</td>
+<td style="text-align: left;">174,082</td>
+<td style="text-align: left;">253,525</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Tennessee</td>
+<td style="text-align: left;">61.91%</td>
+<td style="text-align: left;">3,394,431</td>
+<td style="text-align: left;">5,482,780</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">California</td>
+<td style="text-align: left;">60.60%</td>
+<td style="text-align: left;">10,572,598</td>
+<td style="text-align: left;">17,445,110</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Illinois</td>
+<td style="text-align: left;">59.38%</td>
+<td style="text-align: left;">14,316,060</td>
+<td style="text-align: left;">24,108,511</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">53.44%</td>
+<td style="text-align: left;">5,912,886</td>
+<td style="text-align: left;">11,064,897</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">South Carolina</td>
+<td style="text-align: left;">49.67%</td>
+<td style="text-align: left;">211,878</td>
+<td style="text-align: left;">426,607</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">New York</td>
+<td style="text-align: left;">48.26%</td>
+<td style="text-align: left;">5,251,481</td>
+<td style="text-align: left;">10,881,889</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Indiana</td>
+<td style="text-align: left;">46.43%</td>
+<td style="text-align: left;">786,319</td>
+<td style="text-align: left;">1,693,740</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Georgia</td>
+<td style="text-align: left;">45.76%</td>
+<td style="text-align: left;">124,797</td>
+<td style="text-align: left;">272,707</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-10-states-by-cost-effectiveness-lowest-vcpm-111k-viewable-impressions" class="level3">
+<h3 class="anchored" data-anchor-id="top-10-states-by-cost-effectiveness-lowest-vcpm-111k-viewable-impressions">top 10 states by cost-effectiveness (lowest vcpm, &gt;~111k viewable impressions)</h3>
+<table class="caption-top table" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">state</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">avg. vcpm</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">viewable impressions</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">total cost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Ohio</td>
+<td style="text-align: left;">$28.00</td>
+<td style="text-align: left;">173,768</td>
+<td style="text-align: left;">$4,866.25</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Illinois</td>
+<td style="text-align: left;">$47.62</td>
+<td style="text-align: left;">14,316,060</td>
+<td style="text-align: left;">$681,715.82</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">California</td>
+<td style="text-align: left;">$50.46</td>
+<td style="text-align: left;">10,572,598</td>
+<td style="text-align: left;">$533,482.86</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Indiana</td>
+<td style="text-align: left;">$63.43</td>
+<td style="text-align: left;">786,319</td>
+<td style="text-align: left;">$49,877.60</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Mississippi</td>
+<td style="text-align: left;">$77.64</td>
+<td style="text-align: left;">174,082</td>
+<td style="text-align: left;">$13,514.86</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">South Carolina</td>
+<td style="text-align: left;">$79.04</td>
+<td style="text-align: left;">211,878</td>
+<td style="text-align: left;">$16,746.37</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">New York</td>
+<td style="text-align: left;">$79.06</td>
+<td style="text-align: left;">5,251,481</td>
+<td style="text-align: left;">$415,179.27</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Tennessee</td>
+<td style="text-align: left;">$88.65</td>
+<td style="text-align: left;">3,394,431</td>
+<td style="text-align: left;">$300,901.43</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">$94.29</td>
+<td style="text-align: left;">5,912,886</td>
+<td style="text-align: left;">$557,527.49</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Michigan</td>
+<td style="text-align: left;">$168.65</td>
+<td style="text-align: left;">799,238</td>
+<td style="text-align: left;">$134,787.71</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="observations-for-identify-which-states-were-the-most-cost-effective" class="level2">
+<h2 class="anchored" data-anchor-id="observations-for-identify-which-states-were-the-most-cost-effective"><em>Observations for “Identify which states were the most cost effective”</em></h2>
+<p>I’ll break this up into three sections: will look at CPA/Conversions first, then direct response performance metrics such as CVR/CPC per state, then look at them both in tandem and make suggestions/ideas from there</p>
+<section id="scale-volume-analysistotal-conversions" class="level3">
+<h3 class="anchored" data-anchor-id="scale-volume-analysistotal-conversions">Scale (Volume Analysis/Total Conversions)</h3>
+<ul>
+<li><p>to start: in terms of sanity checks/conversion floors: I filtered out data so we’d only consider states whose conversions were greater than or equal to five, just so we get rid of potential outliers on the low end</p></li>
+<li><p>In terms of purely total conversions, we see, of course, <strong>Illinois, Florida, New York, and California</strong> in terms of pure Total Conversions, with all of these over 1,000 pure conversions.</p>
+<ul>
+<li>Tennessee is next at 807, everything else under that doesn’t even surpass 500 conversions</li>
+</ul></li>
+<li><p>In terms of the lowest number of conversions: <strong>Louisiana, Arkansas, Kentucky, Ohio,</strong> and <strong>South Carolina</strong> didn’t even break 30 conversions</p>
+<ul>
+<li>Something interesting that should be mentioned: the number of total impressions for <strong>Louisiana/Ohio/South Carolina</strong> are alright, even if the number of total conversions is very low</li>
+</ul></li>
+</ul>
+</section>
+<section id="cost-effectiveness-cpa-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="cost-effectiveness-cpa-analysis">Cost-Effectiveness (CPA Analysis)</h3>
+<ul>
+<li><p>The most efficient/cheapest states for cost per action are <strong>Indiana, Kentucky,</strong> and <strong>Ohio</strong></p></li>
+<li><p>The least efficient/most expensive states for cost per action are <strong>South Carolina, Alabama,</strong> and <strong>Michigan</strong></p></li>
+<li><p>In terms of looking at things by CPA, <strong>Illinois</strong> and <strong>New York</strong> are in the top ten for lowest CPA as well, which is great considering that, respectively, each state is ranked <strong>one</strong> and <strong>two</strong> for states by total conversions, and <strong>fifth</strong> and <strong>fourth</strong> for lowest CPA ratings.</p>
+<ul>
+<li>California is also interesting: ranked <strong>4th</strong> for most number of total conversions, and <strong>9th</strong> for most cost-effectiveness</li>
+</ul></li>
+<li><p>In terms of <strong>really bad performing states</strong> (<strong>bad cpa, not many conversions</strong>), <strong>South Carolina, Alabama,</strong> and <strong>Arkansas</strong> did bad across the board.</p></li>
+</ul>
+</section>
+<section id="direct-response-conversion-rate-and-cpc-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="direct-response-conversion-rate-and-cpc-analysis">Direct Response (Conversion Rate and CPC Analysis)</h3>
+<ul>
+<li><p>Purely by <strong>conversion rate</strong>, <strong>Indiana, Georgia,</strong> and <strong>Tennessee</strong> did great.</p></li>
+<li><p><strong>South Carolina, California,</strong> and <strong>Ohio</strong> performed poorly, purely by <strong>conversion rate.</strong></p></li>
+<li><p>Purely by <strong>CPC, Ohio</strong>, <strong>California,</strong> and <strong>Illinois</strong> did great.</p></li>
+<li><p><strong>Georgia, Michigan,</strong> and <strong>Tennessee</strong> performed poorly, purely by <strong>CPC.</strong></p></li>
+<li><p>If we take a deeper dive, however, we see that in terms of <strong>Conversion Rate</strong>, <strong>Tennessee</strong>, <strong>Florida</strong>, <strong>New York</strong>, and <strong>Illinois</strong> are balanced in terms of conversion rate vs.&nbsp;total number of clicks.</p></li>
+<li><p>When we factor <strong>CPC</strong> in, we can see that <strong>California, Illinois, and New York</strong> are all great picks in terms of <strong>average CPC</strong> compared to the number of <strong>total clicks</strong> they bring in.</p></li>
+</ul>
+</section>
+<section id="branding-metrics-ctr-viewability-vcpm-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="branding-metrics-ctr-viewability-vcpm-analysis">Branding Metrics (CTR, Viewability, vCPM Analysis)</h3>
+<ul>
+<li><p>Purely by <strong>click-through rate</strong>, <strong>Michigan, Florida,</strong> and <strong>New York</strong> did great.</p>
+<ul>
+<li>Again, though, we need to consider how <strong>Florida, New York</strong>, and <strong>California</strong> are “realistic” standouts because they have tons of total impressions</li>
+</ul></li>
+<li><p>Purely by <strong>viewability rate</strong>, <strong>Ohio, Mississippi,</strong> and <strong>Tennessee</strong> did great.</p>
+<ul>
+<li>When considering viewable and measurable impressions, <strong>Tennessee, California, Illinois,</strong> and <strong>Florida</strong> are particular “realistic” standouts because they have a decent amount of measurable impressions</li>
+</ul></li>
+<li><p>Purely by <strong>cost-effectiveness</strong>, <strong>Ohio, Illinois, and California</strong> did great.</p>
+<ul>
+<li>Again, when considering viewable impressions compared to total cost, although <strong>Illinois</strong>, <strong>California,</strong> and <strong>New York</strong> may seem to have large total costs, they also bring in a lot of impressions.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="so-what-states-work-across-the-board" class="level2">
+<h2 class="anchored" data-anchor-id="so-what-states-work-across-the-board"><em>So, what states work across the board?</em></h2>
+<ul>
+<li><p>im so tired</p></li>
+<li><p>there are four general categories</p></li>
+<li><p><strong>general all stars (great states!)</strong></p>
+<ul>
+<li><p><strong>illinois, new york, florida, and tennessee</strong> are all great</p></li>
+<li><p>a lot of these states are the best of all worlds: they’re all in the <strong>top 5 for conversion volume</strong> and <strong>top 10</strong> for <strong>lowest cpa/cost-effectiveness</strong></p></li>
+</ul></li>
+<li><p><strong>efficient, and cheap (test and scale)</strong></p>
+<ul>
+<li><strong>indiana</strong> and <strong>kentucky</strong> have <strong>high conversion rates</strong> and <strong>low cpc</strong>, so they have good <strong>audience quality</strong> but scale wasn’t amazing in terms of total impressions; <strong>indiana</strong> was high but not to the same extent as like <strong>new york, illinois,</strong> and <strong>california</strong></li>
+</ul></li>
+<li><p><strong>interesting standouts?</strong></p>
+<ul>
+<li><p><strong>ohio</strong> and <strong>california</strong> have <strong>low-ish</strong> cpas: although <strong>ohio</strong> was <strong>3rd lowest</strong> for cpa, <strong>california</strong> was <strong>9th lowest</strong></p></li>
+<li><p><strong>their conversion rates</strong> were also low, so the audience might be low-quality</p></li>
+<li><p><strong>ohio</strong> has cheap traffic, but audiences suck with <strong>very bad conversion rates</strong>, but <strong>very low cpc</strong></p></li>
+<li><p><strong>california</strong> in particular has <strong>high cpc</strong> and <strong>low conversion rates, but the volume is good</strong></p></li>
+<li><p>so, find ways to optimize <strong>california</strong></p></li>
+</ul></li>
+<li><p><strong>bad states</strong></p>
+<ul>
+<li><p>south carolina, alabama, michigan, and <strong>arkansas</strong> perform badly across the board</p></li>
+<li><p><strong>they have high cpa, high cpc,</strong> and <strong>low conversion rates</strong></p></li>
+</ul></li>
+</ul>
+<hr>
+</section>
+<section id="actually-exploring-additional-insights-beyond-location" class="level2">
+<h2 class="anchored" data-anchor-id="actually-exploring-additional-insights-beyond-location">(Actually) Exploring Additional Insights Beyond Location</h2>
+<p>So, we need to take a step back and see what locations/areas worked well from the previous sections. For the sake of simplicity, I’ll limit it to top 3-5/bottom 3-5.</p>
+<section id="in-terms-of-the-top-4-most-cost-effective-locations-we-had" class="level3">
+<h3 class="anchored" data-anchor-id="in-terms-of-the-top-4-most-cost-effective-locations-we-had">In terms of the top 4 most cost-effective locations, we had:</h3>
+<ul>
+<li><p><strong>Augusta, Georgia</strong></p></li>
+<li><p><strong>Ft. Wayne, Indiana</strong></p></li>
+<li><p><strong>Nashville, Tennessee</strong></p></li>
+<li><p><strong>Lafayette, Indiana</strong></p></li>
+</ul>
+</section>
+<section id="in-terms-of-the-worst-locations-purely-by-cpa-the-bottom-three-were" class="level3">
+<h3 class="anchored" data-anchor-id="in-terms-of-the-worst-locations-purely-by-cpa-the-bottom-three-were">In terms of the worst locations, purely by CPA, the bottom three were:</h3>
+<ul>
+<li><p><strong>Savannah, Georgia</strong></p></li>
+<li><p><strong>Chattanooga, Tennessee</strong></p></li>
+<li><p><strong>Huntsville, Alabama</strong></p></li>
+</ul>
+</section>
+<section id="when-looking-at-performance-aggregated-by-state" class="level3">
+<h3 class="anchored" data-anchor-id="when-looking-at-performance-aggregated-by-state">When looking at performance aggregated by state:</h3>
+<ul>
+<li><p><strong>Illinois, New York, Florida,</strong> and <strong>Tennessee</strong> were all great</p></li>
+<li><p><strong>South Carolina, Alabama, Michigan,</strong> and <strong>Arkansas</strong> all performed badly across the board.</p></li>
+</ul>
+<p>code time !</p>
+</section>
+</section>
+<section id="top-audiences-per-topbottom-performing-locations" class="level2">
+<h2 class="anchored" data-anchor-id="top-audiences-per-topbottom-performing-locations">Top Audiences Per Top/Bottom Performing Locations</h2>
+<section id="top-5-audiences-in-top-locations-augusta-ft.-wayne-nashville-lafayette" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-audiences-in-top-locations-augusta-ft.-wayne-nashville-lafayette">Top 5 Audiences in Top Locations (Augusta, Ft. Wayne, Nashville, Lafayette)</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 69%">
+<col style="width: 14%">
+<col style="width: 8%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Audience Segment</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">US&gt;Demographic&gt;Family&gt;Households with 2 Adults</td>
+<td style="text-align: left;">78</td>
+<td style="text-align: left;">$1,440.75</td>
+<td style="text-align: left;">$18.47</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">US&gt;B2B&gt;B2B Decision Maker Responsibilities&gt;Purchasing Vehicles or Automobile Services</td>
+<td style="text-align: left;">49</td>
+<td style="text-align: left;">$2,276.28</td>
+<td style="text-align: left;">$46.45</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Mobile&gt;US&gt;Sports&gt;Motor Sports&gt;NASCAR</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">$1,523.78</td>
+<td style="text-align: left;">$63.49</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">OnAudience&gt;Interest&gt;Arts &amp; Entertainment&gt;Television</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">$1,620.17</td>
+<td style="text-align: left;">$67.51</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">US&gt;Brand Propensities&gt;Electronics&gt;RadioShack Buyer Propensity</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">$1,679.57</td>
+<td style="text-align: left;">$69.98</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-5-audiences-in-bottom-locations-savannah-chattanooga-huntsville" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-audiences-in-bottom-locations-savannah-chattanooga-huntsville">Top 5 Audiences in Bottom Locations (Savannah, Chattanooga, Huntsville)</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 64%">
+<col style="width: 16%">
+<col style="width: 10%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Audience Segment</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Mobile&gt;US&gt;Travel&gt;Vacation Rentals&gt;HomeAway</td>
+<td style="text-align: left;">18</td>
+<td style="text-align: left;">$1,731.58</td>
+<td style="text-align: left;">$96.20</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Online Behavior&gt;United States&gt;Intent&gt;Financial Intent&gt;Loans and Credit</td>
+<td style="text-align: left;">19</td>
+<td style="text-align: left;">$6,651.51</td>
+<td style="text-align: left;">$350.08</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">US&gt;Interest Propensities&gt;Oil &amp; Gas&gt;QuickTrip</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">$1,991.94</td>
+<td style="text-align: left;">$663.98</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Online Behavior&gt;United States&gt;Intent&gt;Travel&gt;Luxury Travel</td>
+<td style="text-align: left;">8</td>
+<td style="text-align: left;">$5,521.19</td>
+<td style="text-align: left;">$690.15</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">US&gt;Reach&gt;Propensity Models&gt;Hobbies and Interest&gt;Sports&gt;Plays Soccer</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">$3,268.01</td>
+<td style="text-align: left;">$1,089.34</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-5-audiences-in-top-states-illinois-new-york-florida-tennessee" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-audiences-in-top-states-illinois-new-york-florida-tennessee">Top 5 Audiences in Top States (Illinois, New York, Florida, Tennessee)</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 66%">
+<col style="width: 15%">
+<col style="width: 9%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Audience Segment</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">US&gt;Brand Propensities&gt;Automotive&gt;Ford Credit Buyer Propensity</td>
+<td style="text-align: left;">63</td>
+<td style="text-align: left;">$1,595.49</td>
+<td style="text-align: left;">$25.33</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Travel and Tourism&gt;Interest (Affinity)&gt;Destinations&gt;Africa</td>
+<td style="text-align: left;">44</td>
+<td style="text-align: left;">$1,493.07</td>
+<td style="text-align: left;">$33.93</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Real Estate&gt;Lot Size&gt;Cozy Outdoor Living Space (Less than an Acre)</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">$1,773.99</td>
+<td style="text-align: left;">$45.49</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Online Behavior&gt;United States&gt;Autos and Vehicles&gt;Brands&gt;Mazda</td>
+<td style="text-align: left;">125</td>
+<td style="text-align: left;">$6,040.60</td>
+<td style="text-align: left;">$48.32</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Online Behavior&gt;United States&gt;Finance&gt;Credit and Lending&gt;Credit and Lending</td>
+<td style="text-align: left;">154</td>
+<td style="text-align: left;">$8,038.57</td>
+<td style="text-align: left;">$52.20</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-5-audiences-in-bottom-states-south-carolina-alabama-michigan-arkansas" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-audiences-in-bottom-states-south-carolina-alabama-michigan-arkansas">Top 5 Audiences in Bottom States (South Carolina, Alabama, Michigan, Arkansas)</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 54%">
+<col style="width: 21%">
+<col style="width: 13%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Audience Segment</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">US&gt;AUTO&gt;Auto Car Purchase Next Year&gt;Yes</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">$1,623.61</td>
+<td style="text-align: left;">$67.65</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">OnAudience&gt;Intent&gt;Sporting Goods&gt;Team Sports</td>
+<td style="text-align: left;">13</td>
+<td style="text-align: left;">$1,517.24</td>
+<td style="text-align: left;">$116.71</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Lotame&gt;Technology&gt;Electronics &amp; Gadgets</td>
+<td style="text-align: left;">11</td>
+<td style="text-align: left;">$1,639.81</td>
+<td style="text-align: left;">$149.07</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">OnAudience&gt;Intent&gt;Education</td>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">$1,500.72</td>
+<td style="text-align: left;">$150.07</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Lotame&gt;Online Shoppers&gt;Online Shoppers</td>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">$1,543.66</td>
+<td style="text-align: left;">$154.37</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="top-websitesurls-per-topbottom-performing-locations" class="level2">
+<h2 class="anchored" data-anchor-id="top-websitesurls-per-topbottom-performing-locations">Top Websites/URLs Per Top/Bottom Performing Locations</h2>
+<section id="top-5-websites-in-top-locations-augusta-ft.-wayne-nashville-lafayette" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-websites-in-top-locations-augusta-ft.-wayne-nashville-lafayette">Top 5 Websites in Top Locations (Augusta, Ft. Wayne, Nashville, Lafayette)</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Website (app_url)</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">yahoo.com</td>
+<td style="text-align: left;">162</td>
+<td style="text-align: left;">$6,800.45</td>
+<td style="text-align: left;">$41.98</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ebay.com</td>
+<td style="text-align: left;">102</td>
+<td style="text-align: left;">$13,258.42</td>
+<td style="text-align: left;">$129.98</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">uscellular.com</td>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">$1,519.90</td>
+<td style="text-align: left;">$151.99</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">nbcnews.com</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">$6,335.95</td>
+<td style="text-align: left;">$162.46</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">mail.yahoo.com</td>
+<td style="text-align: left;">50</td>
+<td style="text-align: left;">$8,374.14</td>
+<td style="text-align: left;">$167.48</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-5-websites-in-bottom-locations-savannah-chattanooga-huntsville" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-websites-in-bottom-locations-savannah-chattanooga-huntsville">Top 5 Websites in Bottom Locations (Savannah, Chattanooga, Huntsville)</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Website (app_url)</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">foxnews.com</td>
+<td style="text-align: left;">18</td>
+<td style="text-align: left;">$1,731.58</td>
+<td style="text-align: left;">$96.20</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ebay.com</td>
+<td style="text-align: left;">19</td>
+<td style="text-align: left;">$6,651.51</td>
+<td style="text-align: left;">$350.08</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">cargurus.com</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">$1,991.94</td>
+<td style="text-align: left;">$663.98</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">seedsgames.com</td>
+<td style="text-align: left;">8</td>
+<td style="text-align: left;">$5,521.19</td>
+<td style="text-align: left;">$690.15</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">health.usnews.com</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">$3,268.01</td>
+<td style="text-align: left;">$1,089.34</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-5-websites-in-top-states-illinois-new-york-florida-tennessee" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-websites-in-top-states-illinois-new-york-florida-tennessee">Top 5 Websites in Top States (Illinois, New York, Florida, Tennessee)</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 46%">
+<col style="width: 25%">
+<col style="width: 15%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Website (app_url)</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">dictionary.com</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">$1,572.24</td>
+<td style="text-align: left;">$65.51</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factable.com</td>
+<td style="text-align: left;">21</td>
+<td style="text-align: left;">$1,452.59</td>
+<td style="text-align: left;">$69.17</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">semana.com</td>
+<td style="text-align: left;">21</td>
+<td style="text-align: left;">$1,814.10</td>
+<td style="text-align: left;">$86.39</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">taboolanews.com</td>
+<td style="text-align: left;">16</td>
+<td style="text-align: left;">$1,451.81</td>
+<td style="text-align: left;">$90.74</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">baseball.fantasysports.yahoo.com</td>
+<td style="text-align: left;">21</td>
+<td style="text-align: left;">$2,087.51</td>
+<td style="text-align: left;">$99.41</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-5-websites-in-bottom-states-south-carolina-alabama-michigan-arkansas" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-websites-in-bottom-states-south-carolina-alabama-michigan-arkansas">Top 5 Websites in Bottom States (South Carolina, Alabama, Michigan, Arkansas)</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Website (app_url)</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">whatismyipaddress.com</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">$1,623.61</td>
+<td style="text-align: left;">$67.65</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">cbssports.com</td>
+<td style="text-align: left;">13</td>
+<td style="text-align: left;">$1,517.24</td>
+<td style="text-align: left;">$116.71</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">kbb.com</td>
+<td style="text-align: left;">11</td>
+<td style="text-align: left;">$1,639.81</td>
+<td style="text-align: left;">$149.07</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">icy-veins.com</td>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">$1,500.72</td>
+<td style="text-align: left;">$150.07</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">sciencealert.com</td>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">$1,543.66</td>
+<td style="text-align: left;">$154.37</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="top-exchanges-per-topbottom-performing-locations" class="level2">
+<h2 class="anchored" data-anchor-id="top-exchanges-per-topbottom-performing-locations">Top Exchanges Per Top/Bottom Performing Locations</h2>
+<section id="top-5-exchanges-in-top-locations-augusta-ft.-wayne-nashville-lafayette" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-exchanges-in-top-locations-augusta-ft.-wayne-nashville-lafayette">Top 5 Exchanges in Top Locations (Augusta, Ft. Wayne, Nashville, Lafayette)</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 45%">
+<col style="width: 25%">
+<col style="width: 15%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Exchange</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Xandr - Monetize SSP (AppNexus)</td>
+<td style="text-align: left;">112</td>
+<td style="text-align: left;">$14,993.10</td>
+<td style="text-align: left;">$133.87</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Index Exchange</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">$1,540.47</td>
+<td style="text-align: left;">$171.16</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">PubMatic</td>
+<td style="text-align: left;">134</td>
+<td style="text-align: left;">$24,440.56</td>
+<td style="text-align: left;">$182.39</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BidSwitch</td>
+<td style="text-align: left;">118</td>
+<td style="text-align: left;">$22,162.40</td>
+<td style="text-align: left;">$187.82</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Magnite DV+</td>
+<td style="text-align: left;">89</td>
+<td style="text-align: left;">$23,505.17</td>
+<td style="text-align: left;">$264.10</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-5-exchanges-in-bottom-locations-savannah-chattanooga-huntsville" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-exchanges-in-bottom-locations-savannah-chattanooga-huntsville">Top 5 Exchanges in Bottom Locations (Savannah, Chattanooga, Huntsville)</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Exchange</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Yieldmo</td>
+<td style="text-align: left;">19</td>
+<td style="text-align: left;">$6,651.51</td>
+<td style="text-align: left;">$350.08</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Google Ad Manager</td>
+<td style="text-align: left;">30</td>
+<td style="text-align: left;">$12,145.62</td>
+<td style="text-align: left;">$404.85</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Index Exchange</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">$1,991.94</td>
+<td style="text-align: left;">$663.98</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">OpenX</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">$6,381.01</td>
+<td style="text-align: left;">$1,595.25</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">TripleLift</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">$5,038.71</td>
+<td style="text-align: left;">$1,679.57</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-5-exchanges-in-top-states-illinois-new-york-florida-tennessee" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-exchanges-in-top-states-illinois-new-york-florida-tennessee">Top 5 Exchanges in Top States (Illinois, New York, Florida, Tennessee)</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 45%">
+<col style="width: 25%">
+<col style="width: 15%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Exchange</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Kargo</td>
+<td style="text-align: left;">14</td>
+<td style="text-align: left;">$1,593.01</td>
+<td style="text-align: left;">$113.79</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Xandr - Monetize SSP (AppNexus)</td>
+<td style="text-align: left;">359</td>
+<td style="text-align: left;">$63,249.52</td>
+<td style="text-align: left;">$176.18</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">TripleLift</td>
+<td style="text-align: left;">166</td>
+<td style="text-align: left;">$34,134.61</td>
+<td style="text-align: left;">$205.63</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sovrn</td>
+<td style="text-align: left;">37</td>
+<td style="text-align: left;">$7,923.74</td>
+<td style="text-align: left;">$214.16</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">PulsePoint</td>
+<td style="text-align: left;">15</td>
+<td style="text-align: left;">$3,293.52</td>
+<td style="text-align: left;">$219.57</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-5-exchanges-in-bottom-states-south-carolina-alabama-michigan-arkansas" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-exchanges-in-bottom-states-south-carolina-alabama-michigan-arkansas">Top 5 Exchanges in Bottom States (South Carolina, Alabama, Michigan, Arkansas)</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Exchange</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">OpenX</td>
+<td style="text-align: left;">18</td>
+<td style="text-align: left;">$3,515.79</td>
+<td style="text-align: left;">$195.32</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Smart RTB+ (Smartadserver)</td>
+<td style="text-align: left;">25</td>
+<td style="text-align: left;">$6,643.97</td>
+<td style="text-align: left;">$265.76</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Index Exchange</td>
+<td style="text-align: left;">64</td>
+<td style="text-align: left;">$20,031.45</td>
+<td style="text-align: left;">$312.99</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Magnite DV+</td>
+<td style="text-align: left;">40</td>
+<td style="text-align: left;">$12,728.52</td>
+<td style="text-align: left;">$318.21</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Taboola</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">$1,507.85</td>
+<td style="text-align: left;">$376.96</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="top-devices-per-topbottom-performing-locations" class="level2">
+<h2 class="anchored" data-anchor-id="top-devices-per-topbottom-performing-locations">Top Devices Per Top/Bottom Performing Locations</h2>
+<section id="top-devices-in-top-locations-augusta-ft.-wayne-nashville-lafayette" class="level3">
+<h3 class="anchored" data-anchor-id="top-devices-in-top-locations-augusta-ft.-wayne-nashville-lafayette">Top Devices in Top Locations (Augusta, Ft. Wayne, Nashville, Lafayette)</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Device Make</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Windows PC</td>
+<td style="text-align: left;">100</td>
+<td style="text-align: left;">$16,809.60</td>
+<td style="text-align: left;">$168.10</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Smartphone</td>
+<td style="text-align: left;">675</td>
+<td style="text-align: left;">$188,990.15</td>
+<td style="text-align: left;">$279.99</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Apple PC</td>
+<td style="text-align: left;">64</td>
+<td style="text-align: left;">$20,993.66</td>
+<td style="text-align: left;">$328.03</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-device-in-bottom-locations-savannah-chattanooga-huntsville" class="level3">
+<h3 class="anchored" data-anchor-id="top-device-in-bottom-locations-savannah-chattanooga-huntsville">Top Device in Bottom Locations (Savannah, Chattanooga, Huntsville)</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Device Make</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Smartphone</td>
+<td style="text-align: left;">63</td>
+<td style="text-align: left;">$41,517.54</td>
+<td style="text-align: left;">$659.01</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-devices-in-top-states-illinois-new-york-florida-tennessee" class="level3">
+<h3 class="anchored" data-anchor-id="top-devices-in-top-states-illinois-new-york-florida-tennessee">Top Devices in Top States (Illinois, New York, Florida, Tennessee)</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Device Make</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Windows PC</td>
+<td style="text-align: left;">861</td>
+<td style="text-align: left;">$226,278.01</td>
+<td style="text-align: left;">$262.81</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Apple PC</td>
+<td style="text-align: left;">427</td>
+<td style="text-align: left;">$137,502.27</td>
+<td style="text-align: left;">$322.02</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Smartphone</td>
+<td style="text-align: left;">4,864</td>
+<td style="text-align: left;">$1,591,543.73</td>
+<td style="text-align: left;">$327.21</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-devices-in-bottom-states-south-carolina-alabama-michigan-arkansas" class="level3">
+<h3 class="anchored" data-anchor-id="top-devices-in-bottom-states-south-carolina-alabama-michigan-arkansas">Top Devices in Bottom States (South Carolina, Alabama, Michigan, Arkansas)</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Device Make</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Apple PC</td>
+<td style="text-align: left;">42</td>
+<td style="text-align: left;">$11,542.01</td>
+<td style="text-align: left;">$274.81</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Windows PC</td>
+<td style="text-align: left;">53</td>
+<td style="text-align: left;">$18,246.16</td>
+<td style="text-align: left;">$344.27</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Smartphone</td>
+<td style="text-align: left;">290</td>
+<td style="text-align: left;">$143,397.94</td>
+<td style="text-align: left;">$494.48</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="top-creatives-per-topbottom-performing-locations" class="level2">
+<h2 class="anchored" data-anchor-id="top-creatives-per-topbottom-performing-locations">Top Creatives Per Top/Bottom Performing Locations</h2>
+<section id="top-5-creatives-in-top-locations-augusta-ft.-wayne-nashville-lafayette" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-creatives-in-top-locations-augusta-ft.-wayne-nashville-lafayette">Top 5 Creatives in Top Locations (Augusta, Ft. Wayne, Nashville, Lafayette)</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 54%">
+<col style="width: 21%">
+<col style="width: 13%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Creative (Size | Message)</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">320x50 | 10% Discount - Ends 6/1</td>
+<td style="text-align: left;">159</td>
+<td style="text-align: left;">$21,610.08</td>
+<td style="text-align: left;">$135.91</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">300x250 | 10% Discount - Ends 6/1</td>
+<td style="text-align: left;">205</td>
+<td style="text-align: left;">$45,371.43</td>
+<td style="text-align: left;">$221.32</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">300x250 | Subscribe Today - 10% Discount</td>
+<td style="text-align: left;">126</td>
+<td style="text-align: left;">$35,381.28</td>
+<td style="text-align: left;">$280.80</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">320x50 | Sign up Today - 10% Off</td>
+<td style="text-align: left;">125</td>
+<td style="text-align: left;">$36,358.45</td>
+<td style="text-align: left;">$290.87</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">320x50 | Sign up Now - 10% Off</td>
+<td style="text-align: left;">74</td>
+<td style="text-align: left;">$21,730.94</td>
+<td style="text-align: left;">$293.66</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-5-creatives-in-bottom-locations-savannah-chattanooga-huntsville" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-creatives-in-bottom-locations-savannah-chattanooga-huntsville">Top 5 Creatives in Bottom Locations (Savannah, Chattanooga, Huntsville)</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 53%">
+<col style="width: 21%">
+<col style="width: 13%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Creative (Size | Message)</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">320x50 | Sign up Today - 10% Off</td>
+<td style="text-align: left;">29</td>
+<td style="text-align: left;">$12,291.49</td>
+<td style="text-align: left;">$423.84</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">320x50 | Sign up Now - 10% Off</td>
+<td style="text-align: left;">20</td>
+<td style="text-align: left;">$12,525.52</td>
+<td style="text-align: left;">$626.28</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">320x50 | Subscribe Today - 10% Discount</td>
+<td style="text-align: left;">6</td>
+<td style="text-align: left;">$5,426.67</td>
+<td style="text-align: left;">$904.45</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">300x250 | Sign up Now - 10% Off</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">$3,268.01</td>
+<td style="text-align: left;">$1,089.34</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">320x50 | 10% Discount - Ends 6/1</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">$6,381.01</td>
+<td style="text-align: left;">$1,595.25</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-5-creatives-in-top-states-illinois-new-york-florida-tennessee" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-creatives-in-top-states-illinois-new-york-florida-tennessee">Top 5 Creatives in Top States (Illinois, New York, Florida, Tennessee)</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 54%">
+<col style="width: 21%">
+<col style="width: 14%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Creative (Size | Message)</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">320x50 | Subscribe Today - 10% Discount</td>
+<td style="text-align: left;">991</td>
+<td style="text-align: left;">$260,325.99</td>
+<td style="text-align: left;">$262.69</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">320x50 | 10% Discount - Ends 6/1</td>
+<td style="text-align: left;">708</td>
+<td style="text-align: left;">$194,672.53</td>
+<td style="text-align: left;">$274.96</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">300x250 | Sign up Now - 10% Off</td>
+<td style="text-align: left;">685</td>
+<td style="text-align: left;">$191,660.54</td>
+<td style="text-align: left;">$279.80</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">320x50 | Sign up Today - 10% Off</td>
+<td style="text-align: left;">773</td>
+<td style="text-align: left;">$227,645.24</td>
+<td style="text-align: left;">$294.50</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">300x250 | Subscribe Today - 10% Discount</td>
+<td style="text-align: left;">856</td>
+<td style="text-align: left;">$262,416.18</td>
+<td style="text-align: left;">$306.56</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-5-creatives-in-bottom-states-south-carolina-alabama-michigan-arkansas" class="level3">
+<h3 class="anchored" data-anchor-id="top-5-creatives-in-bottom-states-south-carolina-alabama-michigan-arkansas">Top 5 Creatives in Bottom States (South Carolina, Alabama, Michigan, Arkansas)</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 54%">
+<col style="width: 21%">
+<col style="width: 13%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Creative (Size | Message)</th>
+<th style="text-align: left;">Total Conversions</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">320x50 | 10% Discount - Ends 6/1</td>
+<td style="text-align: left;">27</td>
+<td style="text-align: left;">$8,884.46</td>
+<td style="text-align: left;">$329.05</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">300x250 | 10% Discount - Ends 6/1</td>
+<td style="text-align: left;">67</td>
+<td style="text-align: left;">$22,063.42</td>
+<td style="text-align: left;">$329.30</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">300x250 | Sign up Today - 10% Off</td>
+<td style="text-align: left;">44</td>
+<td style="text-align: left;">$14,951.73</td>
+<td style="text-align: left;">$339.81</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">320x50 | Subscribe Today - 10% Discount</td>
+<td style="text-align: left;">100</td>
+<td style="text-align: left;">$41,351.15</td>
+<td style="text-align: left;">$413.51</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">300x250 | Subscribe Today - 10% Discount</td>
+<td style="text-align: left;">44</td>
+<td style="text-align: left;">$19,156.47</td>
+<td style="text-align: left;">$435.37</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="top-viewability-per-topbottom-performing-locations" class="level2">
+<h2 class="anchored" data-anchor-id="top-viewability-per-topbottom-performing-locations">Top Viewability Per Top/Bottom Performing Locations</h2>
+<section id="top-viewability-in-top-locations-augusta-ft.-wayne-nashville-lafayette" class="level3">
+<h3 class="anchored" data-anchor-id="top-viewability-in-top-locations-augusta-ft.-wayne-nashville-lafayette">Top Viewability in Top Locations (Augusta, Ft. Wayne, Nashville, Lafayette)</h3>
+<p>by highest <em>View Rate</em> (most seen)</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 28%">
+<col style="width: 17%">
+<col style="width: 15%">
+<col style="width: 11%">
+<col style="width: 16%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Website (app_url)</th>
+<th style="text-align: left;">Measurable Imps</th>
+<th style="text-align: left;">Viewable Imps</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. View Rate</th>
+<th style="text-align: left;">Avg. vCPM</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">outlook.live.com</td>
+<td style="text-align: left;">607,222</td>
+<td style="text-align: left;">552,062</td>
+<td style="text-align: left;">$9,901.34</td>
+<td style="text-align: left;">90.92%</td>
+<td style="text-align: left;">$17.94</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">timeanddate.com</td>
+<td style="text-align: left;">11,247</td>
+<td style="text-align: left;">9,613</td>
+<td style="text-align: left;">$1,765.40</td>
+<td style="text-align: left;">85.47%</td>
+<td style="text-align: left;">$183.65</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">people.com</td>
+<td style="text-align: left;">68,123</td>
+<td style="text-align: left;">53,264</td>
+<td style="text-align: left;">$6,392.47</td>
+<td style="text-align: left;">78.19%</td>
+<td style="text-align: left;">$120.01</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">dailymail.co.uk/tvshowbiz</td>
+<td style="text-align: left;">13,992</td>
+<td style="text-align: left;">10,713</td>
+<td style="text-align: left;">$1,578.88</td>
+<td style="text-align: left;">76.57%</td>
+<td style="text-align: left;">$147.38</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">nbcnews.com</td>
+<td style="text-align: left;">183,688</td>
+<td style="text-align: left;">130,676</td>
+<td style="text-align: left;">$6,335.95</td>
+<td style="text-align: left;">71.14%</td>
+<td style="text-align: left;">$48.49</td>
+</tr>
+</tbody>
+</table>
+<p>by lowest <em>vCPM</em> (most cost-effective)</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 19%">
+<col style="width: 16%">
+<col style="width: 13%">
+<col style="width: 17%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Website (app_url)</th>
+<th style="text-align: left;">Measurable Imps</th>
+<th style="text-align: left;">Viewable Imps</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. View Rate</th>
+<th style="text-align: left;">Avg. vCPM</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">yahoo.com</td>
+<td style="text-align: left;">1,044,227</td>
+<td style="text-align: left;">450,200</td>
+<td style="text-align: left;">$6,800.45</td>
+<td style="text-align: left;">43.11%</td>
+<td style="text-align: left;">$15.11</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">outlook.live.com</td>
+<td style="text-align: left;">607,222</td>
+<td style="text-align: left;">552,062</td>
+<td style="text-align: left;">$9,901.34</td>
+<td style="text-align: left;">90.92%</td>
+<td style="text-align: left;">$17.94</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ebay.com</td>
+<td style="text-align: left;">976,536</td>
+<td style="text-align: left;">618,426</td>
+<td style="text-align: left;">$13,258.42</td>
+<td style="text-align: left;">63.33%</td>
+<td style="text-align: left;">$21.44</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">mail.yahoo.com</td>
+<td style="text-align: left;">476,509</td>
+<td style="text-align: left;">324,007</td>
+<td style="text-align: left;">$8,374.14</td>
+<td style="text-align: left;">68.00%</td>
+<td style="text-align: left;">$25.85</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">msn.com</td>
+<td style="text-align: left;">477,718</td>
+<td style="text-align: left;">331,320</td>
+<td style="text-align: left;">$11,943.84</td>
+<td style="text-align: left;">69.35%</td>
+<td style="text-align: left;">$36.05</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-viewability-in-bottom-locations-savannah-chattanooga-huntsville" class="level3">
+<h3 class="anchored" data-anchor-id="top-viewability-in-bottom-locations-savannah-chattanooga-huntsville">Top Viewability in Bottom Locations (Savannah, Chattanooga, Huntsville)</h3>
+<p>by highest <em>View Rate</em> (most seen)</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 27%">
+<col style="width: 17%">
+<col style="width: 15%">
+<col style="width: 12%">
+<col style="width: 16%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Website (app_url)</th>
+<th style="text-align: left;">Measurable Imps</th>
+<th style="text-align: left;">Viewable Imps</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. View Rate</th>
+<th style="text-align: left;">Avg. vCPM</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">microsoftcasualgames.com</td>
+<td style="text-align: left;">14,192</td>
+<td style="text-align: left;">9,248</td>
+<td style="text-align: left;">$5,874.00</td>
+<td style="text-align: left;">65.16%</td>
+<td style="text-align: left;">$635.16</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">foxnews.com</td>
+<td style="text-align: left;">82,985</td>
+<td style="text-align: left;">51,004</td>
+<td style="text-align: left;">$1,731.58</td>
+<td style="text-align: left;">61.46%</td>
+<td style="text-align: left;">$33.95</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">cargurus.com</td>
+<td style="text-align: left;">15,611</td>
+<td style="text-align: left;">9,438</td>
+<td style="text-align: left;">$1,991.94</td>
+<td style="text-align: left;">60.46%</td>
+<td style="text-align: left;">$211.06</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">realtor.com</td>
+<td style="text-align: left;">104,074</td>
+<td style="text-align: left;">50,923</td>
+<td style="text-align: left;">$4,036.09</td>
+<td style="text-align: left;">48.93%</td>
+<td style="text-align: left;">$79.26</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">seedsgames.com</td>
+<td style="text-align: left;">13,268</td>
+<td style="text-align: left;">866</td>
+<td style="text-align: left;">$5,521.19</td>
+<td style="text-align: left;">6.53%</td>
+<td style="text-align: left;">$6,375.51</td>
+</tr>
+</tbody>
+</table>
+<p>by lowest <em>vCPM</em> (most cost-effective)</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 27%">
+<col style="width: 17%">
+<col style="width: 15%">
+<col style="width: 12%">
+<col style="width: 16%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Website (app_url)</th>
+<th style="text-align: left;">Measurable Imps</th>
+<th style="text-align: left;">Viewable Imps</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. View Rate</th>
+<th style="text-align: left;">Avg. vCPM</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">foxnews.com</td>
+<td style="text-align: left;">82,985</td>
+<td style="text-align: left;">51,004</td>
+<td style="text-align: left;">$1,731.58</td>
+<td style="text-align: left;">61.46%</td>
+<td style="text-align: left;">$33.95</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">realtor.com</td>
+<td style="text-align: left;">104,074</td>
+<td style="text-align: left;">50,923</td>
+<td style="text-align: left;">$4,036.09</td>
+<td style="text-align: left;">48.93%</td>
+<td style="text-align: left;">$79.26</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">cargurus.com</td>
+<td style="text-align: left;">15,611</td>
+<td style="text-align: left;">9,438</td>
+<td style="text-align: left;">$1,991.94</td>
+<td style="text-align: left;">60.46%</td>
+<td style="text-align: left;">$211.06</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">microsoftcasualgames.com</td>
+<td style="text-align: left;">14,192</td>
+<td style="text-align: left;">9,248</td>
+<td style="text-align: left;">$5,874.00</td>
+<td style="text-align: left;">65.16%</td>
+<td style="text-align: left;">$635.16</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ebay.com</td>
+<td style="text-align: left;">69,246</td>
+<td style="text-align: left;">1,420</td>
+<td style="text-align: left;">$6,651.51</td>
+<td style="text-align: left;">2.05%</td>
+<td style="text-align: left;">$4,684.17</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-viewability-in-top-states-illinois-new-york-florida-tennessee" class="level3">
+<h3 class="anchored" data-anchor-id="top-viewability-in-top-states-illinois-new-york-florida-tennessee">Top Viewability in Top States (Illinois, New York, Florida, Tennessee)</h3>
+<p>by highest <em>View Rate</em> (most seen)</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 19%">
+<col style="width: 16%">
+<col style="width: 13%">
+<col style="width: 17%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Website (app_url)</th>
+<th style="text-align: left;">Measurable Imps</th>
+<th style="text-align: left;">Viewable Imps</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. View Rate</th>
+<th style="text-align: left;">Avg. vCPM</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">outlook.live.com</td>
+<td style="text-align: left;">1,046,316</td>
+<td style="text-align: left;">950,117</td>
+<td style="text-align: left;">$31,924.95</td>
+<td style="text-align: left;">90.81%</td>
+<td style="text-align: left;">$33.60</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">timeanddate.com</td>
+<td style="text-align: left;">51,931</td>
+<td style="text-align: left;">45,653</td>
+<td style="text-align: left;">$6,814.25</td>
+<td style="text-align: left;">87.91%</td>
+<td style="text-align: left;">$149.26</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">femanin.com</td>
+<td style="text-align: left;">89,936</td>
+<td style="text-align: left;">78,735</td>
+<td style="text-align: left;">$8,625.32</td>
+<td style="text-align: left;">87.55%</td>
+<td style="text-align: left;">$109.55</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">activebeat.com</td>
+<td style="text-align: left;">71,110</td>
+<td style="text-align: left;">61,995</td>
+<td style="text-align: left;">$7,065.67</td>
+<td style="text-align: left;">87.18%</td>
+<td style="text-align: left;">$113.97</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">mapquest.com</td>
+<td style="text-align: left;">57,514</td>
+<td style="text-align: left;">49,828</td>
+<td style="text-align: left;">$13,084.94</td>
+<td style="text-align: left;">86.64%</td>
+<td style="text-align: left;">$262.60</td>
+</tr>
+</tbody>
+</table>
+<p>by lowest <em>vCPM</em> (most cost-effective)</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 19%">
+<col style="width: 16%">
+<col style="width: 13%">
+<col style="width: 17%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Website (app_url)</th>
+<th style="text-align: left;">Measurable Imps</th>
+<th style="text-align: left;">Viewable Imps</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. View Rate</th>
+<th style="text-align: left;">Avg. vCPM</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">streetinsider.com</td>
+<td style="text-align: left;">665,285</td>
+<td style="text-align: left;">484,275</td>
+<td style="text-align: left;">$4,481.37</td>
+<td style="text-align: left;">72.79%</td>
+<td style="text-align: left;">$9.25</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">msn.com</td>
+<td style="text-align: left;">9,224,345</td>
+<td style="text-align: left;">6,251,179</td>
+<td style="text-align: left;">$84,290.19</td>
+<td style="text-align: left;">67.77%</td>
+<td style="text-align: left;">$13.48</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">mail.yahoo.com</td>
+<td style="text-align: left;">9,064,861</td>
+<td style="text-align: left;">5,802,352</td>
+<td style="text-align: left;">$85,926.29</td>
+<td style="text-align: left;">64.01%</td>
+<td style="text-align: left;">$14.81</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">yahoo.com</td>
+<td style="text-align: left;">8,544,477</td>
+<td style="text-align: left;">4,273,006</td>
+<td style="text-align: left;">$77,680.46</td>
+<td style="text-align: left;">50.01%</td>
+<td style="text-align: left;">$18.18</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">taboolanews.com</td>
+<td style="text-align: left;">179,723</td>
+<td style="text-align: left;">75,089</td>
+<td style="text-align: left;">$1,451.81</td>
+<td style="text-align: left;">41.78%</td>
+<td style="text-align: left;">$19.33</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="top-viewability-in-bottom-states-south-carolina-alabama-michigan-arkansas" class="level3">
+<h3 class="anchored" data-anchor-id="top-viewability-in-bottom-states-south-carolina-alabama-michigan-arkansas">Top Viewability in Bottom States (South Carolina, Alabama, Michigan, Arkansas)</h3>
+<p>by highest <em>View Rate</em> (most seen)</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 19%">
+<col style="width: 16%">
+<col style="width: 13%">
+<col style="width: 17%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Website (app_url)</th>
+<th style="text-align: left;">Measurable Imps</th>
+<th style="text-align: left;">Viewable Imps</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. View Rate</th>
+<th style="text-align: left;">Avg. vCPM</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">outlook.live.com</td>
+<td style="text-align: left;">91,722</td>
+<td style="text-align: left;">85,021</td>
+<td style="text-align: left;">$3,573.69</td>
+<td style="text-align: left;">92.69%</td>
+<td style="text-align: left;">$42.03</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">calculator.net</td>
+<td style="text-align: left;">35,043</td>
+<td style="text-align: left;">31,262</td>
+<td style="text-align: left;">$3,285.83</td>
+<td style="text-align: left;">89.21%</td>
+<td style="text-align: left;">$105.11</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">pandora.com</td>
+<td style="text-align: left;">12,885</td>
+<td style="text-align: left;">10,871</td>
+<td style="text-align: left;">$1,699.06</td>
+<td style="text-align: left;">84.37%</td>
+<td style="text-align: left;">$156.29</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">mail.aol.com</td>
+<td style="text-align: left;">27,750</td>
+<td style="text-align: left;">21,830</td>
+<td style="text-align: left;">$6,643.97</td>
+<td style="text-align: left;">78.67%</td>
+<td style="text-align: left;">$304.35</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">sciencealert.com</td>
+<td style="text-align: left;">11,461</td>
+<td style="text-align: left;">8,357</td>
+<td style="text-align: left;">$1,543.66</td>
+<td style="text-align: left;">72.92%</td>
+<td style="text-align: left;">$184.71</td>
+</tr>
+</tbody>
+</table>
+<p>by lowest <em>vCPM</em> (most cost-effective)</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 19%">
+<col style="width: 16%">
+<col style="width: 13%">
+<col style="width: 17%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Website (app_url)</th>
+<th style="text-align: left;">Measurable Imps</th>
+<th style="text-align: left;">Viewable Imps</th>
+<th style="text-align: left;">Total Cost</th>
+<th style="text-align: left;">Avg. View Rate</th>
+<th style="text-align: left;">Avg. vCPM</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">outlook.live.com</td>
+<td style="text-align: left;">91,722</td>
+<td style="text-align: left;">85,021</td>
+<td style="text-align: left;">$3,573.69</td>
+<td style="text-align: left;">92.69%</td>
+<td style="text-align: left;">$42.03</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">cbsnews.com</td>
+<td style="text-align: left;">436,133</td>
+<td style="text-align: left;">70,777</td>
+<td style="text-align: left;">$3,870.25</td>
+<td style="text-align: left;">16.23%</td>
+<td style="text-align: left;">$54.68</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">biblegateway.com</td>
+<td style="text-align: left;">131,610</td>
+<td style="text-align: left;">70,405</td>
+<td style="text-align: left;">$4,696.27</td>
+<td style="text-align: left;">53.50%</td>
+<td style="text-align: left;">$66.70</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">yahoo.com</td>
+<td style="text-align: left;">327,727</td>
+<td style="text-align: left;">138,475</td>
+<td style="text-align: left;">$9,491.77</td>
+<td style="text-align: left;">42.25%</td>
+<td style="text-align: left;">$68.55</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">motor-junkie.com</td>
+<td style="text-align: left;">48,902</td>
+<td style="text-align: left;">26,779</td>
+<td style="text-align: left;">$1,912.97</td>
+<td style="text-align: left;">54.76%</td>
+<td style="text-align: left;">$71.44</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+<section id="final-stuff-for-the-presentationslides" class="level1">
+<h1>FINAL STUFF FOR THE PRESENTATION/SLIDES</h1>
+<section id="top-15-locations-by-conversion-rate-with-volume-cpa" class="level3">
+<h3 class="anchored" data-anchor-id="top-15-locations-by-conversion-rate-with-volume-cpa">Top 15 Locations by Conversion Rate (with Volume &amp; CPA)</h3>
+<table class="caption-top table" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">City</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">State</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Conversion Rate (CVR)</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Total Conversions</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Total Clicks</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Avg. CPA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Little Rock</td>
+<td style="text-align: left;">Arkansas</td>
+<td style="text-align: left;">40.00%</td>
+<td style="text-align: left;">12</td>
+<td style="text-align: left;">30</td>
+<td style="text-align: left;">$382.88</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Louisville</td>
+<td style="text-align: left;">Kentucky</td>
+<td style="text-align: left;">8.62%</td>
+<td style="text-align: left;">15</td>
+<td style="text-align: left;">174</td>
+<td style="text-align: left;">$183.58</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Huntsville</td>
+<td style="text-align: left;">Alabama</td>
+<td style="text-align: left;">8.46%</td>
+<td style="text-align: left;">11</td>
+<td style="text-align: left;">130</td>
+<td style="text-align: left;">$683.01</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Orlando</td>
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">8.44%</td>
+<td style="text-align: left;">147</td>
+<td style="text-align: left;">1,742</td>
+<td style="text-align: left;">$397.03</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Peoria</td>
+<td style="text-align: left;">Illinois</td>
+<td style="text-align: left;">8.04%</td>
+<td style="text-align: left;">44</td>
+<td style="text-align: left;">547</td>
+<td style="text-align: left;">$373.90</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ft. Wayne</td>
+<td style="text-align: left;">Indiana</td>
+<td style="text-align: left;">7.76%</td>
+<td style="text-align: left;">138</td>
+<td style="text-align: left;">1,778</td>
+<td style="text-align: left;">$136.92</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">South Bend</td>
+<td style="text-align: left;">Indiana</td>
+<td style="text-align: left;">7.19%</td>
+<td style="text-align: left;">81</td>
+<td style="text-align: left;">1,127</td>
+<td style="text-align: left;">$323.41</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Augusta</td>
+<td style="text-align: left;">Georgia</td>
+<td style="text-align: left;">6.76%</td>
+<td style="text-align: left;">79</td>
+<td style="text-align: left;">1,168</td>
+<td style="text-align: left;">$254.74</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Mobile</td>
+<td style="text-align: left;">Alabama</td>
+<td style="text-align: left;">6.70%</td>
+<td style="text-align: left;">14</td>
+<td style="text-align: left;">209</td>
+<td style="text-align: left;">$356.06</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Panama City</td>
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">6.43%</td>
+<td style="text-align: left;">47</td>
+<td style="text-align: left;">731</td>
+<td style="text-align: left;">$174.71</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Rockford</td>
+<td style="text-align: left;">Illinois</td>
+<td style="text-align: left;">6.41%</td>
+<td style="text-align: left;">18</td>
+<td style="text-align: left;">281</td>
+<td style="text-align: left;">$423.17</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Tampa</td>
+<td style="text-align: left;">Florida</td>
+<td style="text-align: left;">6.03%</td>
+<td style="text-align: left;">103</td>
+<td style="text-align: left;">1,708</td>
+<td style="text-align: left;">$442.13</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Knoxville</td>
+<td style="text-align: left;">Tennessee</td>
+<td style="text-align: left;">5.86%</td>
+<td style="text-align: left;">116</td>
+<td style="text-align: left;">1,979</td>
+<td style="text-align: left;">$403.34</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Grand Rapids</td>
+<td style="text-align: left;">Michigan</td>
+<td style="text-align: left;">5.75%</td>
+<td style="text-align: left;">207</td>
+<td style="text-align: left;">3,600</td>
+<td style="text-align: left;">$419.91</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Champaign</td>
+<td style="text-align: left;">Illinois</td>
+<td style="text-align: left;">5.68%</td>
+<td style="text-align: left;">57</td>
+<td style="text-align: left;">1,003</td>
+<td style="text-align: left;">$378.99</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

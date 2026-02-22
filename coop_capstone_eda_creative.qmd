@@ -1,0 +1,308 @@
+---
+title: "capstone data analysis - creative"
+format: html
+editor: visual
+---
+
+### RUN DATA CLEANING QMD FIRST PLS
+
+```{r setup and data import}
+ 
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(broom)
+library(janitor)
+library(skimr)
+library(tinytex)
+library(writexl)
+library(pillar)
+library(knitr)
+library(scales)
+library(DT)
+
+dat_kpis <- read_csv("data/dat_kpis.csv")
+```
+
+```{r increase display size}
+# tl;dr show more data on one screen
+# increase the number of columns printed on screen
+options(pillar.width = Inf) # try to use full width of document
+options(pillar.max_footer_lines = 3) # allows more lines in the footer if columns are truncated
+```
+
+## Data Glossary
+
+Here's an explanation of each column in the final `dat_kpis` dataset:
+
+### Original & Cleaned Location Columns
+
+-   **`location`**: The original, raw location string as it appeared in the input data (e.g., "Orlando-Daytona Beach, Florida", "Mobile, Alabama-Pensacola, Florida").
+-   **`city`**: The city part extracted directly after splitting the location string by the first comma. This might contain multiple city names or DMA names (e.g., "Orlando-Daytona Beach", "Champaign & Springfield-Decatur").
+-   **`state`**: The cleaned and standardized state name, corrected for cross-state DMA entries (e.g., "Florida", "Alabama", "Tennessee").
+-   **`city_primary`**: The single, primary city name extracted from the `city` column, intended for geocoding and mapping (e.g., "Orlando", "Champaign", "Mobile", "Los Angeles").
+-   **`state_raw`**: A temporary column holding the state information immediately after the initial separate split, before manual corrections were applied (e.g., "Florida", "Alabama-Pensacola, Florida").
+
+### Ad Details & Targeting Columns
+
+-   **`audience_segment`**: Describes the target audience characteristics or online behavior used for showing the ad (e.g., "Online Behavior\>United States\>Finance\>Financial Planning...").
+-   **`creative_size`**: The dimensions of the ad creative in pixels (e.g., "300x250", "320x50").
+-   **`creative_messaging`**: The marketing message or call to action used in the ad (e.g., "Subscribe Today - 10% Discount", "Sign up Now - 10% Off").
+-   **`app_url`**: The specific website or app where the ad impression occurred (e.g., "accuweather.com", "cnn.com").
+-   **`exchange`**: The advertising technology platform that facilitated the ad serving (e.g., "Google Ad Manager", "PubMatic").
+-   **`device_make`**: The type of device on which the ad was displayed (e.g., "Smartphone", "Apple PC", "Windows PC").
+
+### Core Performance Metrics
+
+-   **`impressions`**: The total number of times the ad was displayed.
+-   **`clicks`**: The total number of times the ad was clicked.
+-   **`viewable_impressions`**: The number of impressions where the ad met industry standards for actually being considered viewable by a user.
+-   **`measurable_impressions`**: The number of impressions for which viewability could be technically measured.
+-   **`total_conversions`**: The number of times a desired action (like a sign-up or purchase) was completed after a user clicked the ad.
+-   **`gross_cost`**: The total amount spent for the ad impressions/clicks listed in that row.
+
+### Calculated KPIs
+
+-   **`ctr` (Click-Through Rate)**: $(\frac{\text{clicks}}{\text{impressions}})$. Shows the percentage of impressions that led to a click.
+-   **`conv_rate` (Conversion Rate)**: $(\frac{\text{total\_conversions}}{\text{clicks}})$. Shows the percentage of clicks that led to a conversion.
+-   **`cpa` (Cost Per Acquisition)**: $(\frac{\text{gross\_cost}}{\text{total\_conversions}})$. The average cost to acquire one conversion. ($\text{NA}$ if conversions $\text{= 0}$).
+-   **`cpc` (Cost Per Click)**: $(\frac{\text{gross\_cost}}{\text{clicks}})$. The average cost for each click. ($\text{NA}$ if clicks $\text{= 0}$).
+-   **`ecpm` (Effective Cost Per Mille/Thousand)**: $(\frac{\text{gross\_cost}}{\text{impressions}}) \times 1000$. The cost for one thousand impressions.
+-   **`view_rate` (Viewability Rate)**: $(\frac{\text{viewable\_impressions}}{\text{measurable\_impressions}})$. The percentage of measurable impressions that were actually viewable.
+-   **`vcpm` (Viewable Cost Per Mille/Thousand)**: $(\frac{\text{gross\_cost}}{\text{viewable\_impressions}}) \times 1000$. The cost for one thousand viewable impressions. ($\text{NA}$ if viewable_impressions $\text{= 0}$).
+
+# accidentally did creative analyst stuff! work is here
+
+# Creative Analyst Stuff/Exploring Additional Insights Beyond Location
+
+## Analyze performance by app/website where ad appeared
+
+```{r analyze app_url exchange - data summary check}
+dat_kpis |> 
+  select(impressions) |> 
+  skim()
+```
+
+```{r analyze app_url exchange - data}
+# analyze performance by the website/app where the ad appeared
+# performance per app/url
+app_performance <- dat_kpis |>
+  group_by(app_url) |>
+  summarise(
+    total_impressions = sum(impressions),
+    total_clicks = sum(clicks),
+    total_conversions = sum(total_conversions),
+    total_gross_cost = sum(gross_cost),
+    avg_cpa = ifelse(total_conversions > 0, total_gross_cost / total_conversions, na_real_),
+    avg_ctr = ifelse(total_impressions > 0, total_clicks / total_impressions, 0),
+    .groups = 'drop'
+  ) |>
+  # focus on sites with a decent number of impressions to make stats more stable
+  filter(total_impressions > 14024.5) |>
+  # sort by cost-effectiveness (lowest cpa)
+  arrange(avg_cpa)
+
+# performance per exchange
+exchange_performance <- dat_kpis |>
+  group_by(exchange) |>
+  summarise(
+    total_impressions = sum(impressions),
+    total_clicks = sum(clicks),
+    total_conversions = sum(total_conversions),
+    total_gross_cost = sum(gross_cost),
+    avg_cpa = ifelse(total_conversions > 0, total_gross_cost / total_conversions, na_real_),
+    avg_ctr = ifelse(total_impressions > 0, total_clicks / total_impressions, 0),
+    .groups = 'drop'
+  ) |>
+  # sort by total conversions first, then by cpa
+  arrange(desc(total_conversions), avg_cpa)
+```
+
+```{r analyze app_url exchange, results = 'asis'}
+# store top/bottom apps
+top_apps <- head(app_performance, 15)
+bottom_apps <- tail(app_performance, 15)
+
+# helper function to format these tables
+format_app_table <- function(table_data) {
+  table_data |>
+    mutate(
+      total_impressions = scales::comma(total_impressions, accuracy = 1),
+      total_clicks = scales::comma(total_clicks, accuracy = 1),
+      total_conversions = scales::comma(total_conversions, accuracy = 1),
+      total_gross_cost = scales::dollar(total_gross_cost, accuracy = 0.01),
+      avg_cpa = scales::dollar(avg_cpa, accuracy = 0.01),
+      avg_ctr = scales::percent(avg_ctr, accuracy = 0.01)
+    ) |>
+    kable(format = "html",
+          col.names = c("app/url", "total impressions", "total clicks", "total conversions", "total cost", "avg cpa", "avg ctr"))
+}
+
+# helper function for exchange table
+format_exchange_table <- function(table_data) {
+  table_data |>
+    mutate(
+      total_impressions = scales::comma(total_impressions, accuracy = 1),
+      total_clicks = scales::comma(total_clicks, accuracy = 1),
+      total_conversions = scales::comma(total_conversions, accuracy = 1),
+      total_gross_cost = scales::dollar(total_gross_cost, accuracy = 0.01),
+      avg_cpa = scales::dollar(avg_cpa, accuracy = 0.01),
+      avg_ctr = scales::percent(avg_ctr, accuracy = 0.01)
+    ) |>
+    kable(format = "html",
+          col.names = c("exchange", "total impressions", "total clicks", "total conversions", "total cost", "avg cpa", "avg ctr"))
+}
+
+# --- top 15 performing websites ---
+cat("### Top 15 Performing Websites (by CPA, min ~14k impressions)\n")
+top_apps |>
+  format_app_table() |>
+  print()
+
+# --- bottom 15 performing websites ---
+cat("### Bottom 15 Performing Websites (by CPA, min ~14k impressions)\n")
+bottom_apps |>
+  # re-sort descending for this table to show worst-at-top
+  arrange(desc(avg_cpa)) |> 
+  format_app_table() |>
+  print()
+
+# --- performance by ad exchange ---
+cat("### Performance by Ad Exchange (Sorted by Conversions, then CPA)\n")
+exchange_performance |>
+  format_exchange_table() |>
+  print()
+```
+
+## Analyze performance by type of device, creative size, creative message
+
+```{r analyze device - data}
+# analyze performance by the type of device (smartphone, pc, etc.)
+device_performance <- dat_kpis |>
+  group_by(device_make) |>
+  summarise(
+    total_impressions = sum(impressions),
+    total_clicks = sum(clicks),
+    total_conversions = sum(total_conversions),
+    total_gross_cost = sum(gross_cost),
+    # calculate overall cpa for the device type
+    avg_cpa = ifelse(total_conversions > 0, total_gross_cost / total_conversions, na_real_),
+    # calculate overall ctr for the device type
+    avg_ctr = ifelse(total_impressions > 0, total_clicks / total_impressions, 0),
+    # calculate overall conversion rate for the device type
+    avg_conv_rate = ifelse(total_clicks > 0, total_conversions / total_clicks, 0),
+    .groups = 'drop'
+  )
+```
+
+```{r analyze device - kable, results='asis'}
+# --- performance by device ---
+cat("### Performance by Device\n")
+device_performance |>
+  mutate(
+    total_impressions = scales::comma(total_impressions, accuracy = 1),
+    total_clicks = scales::comma(total_clicks, accuracy = 1),
+    total_conversions = scales::comma(total_conversions, accuracy = 1),
+    total_gross_cost = scales::dollar(total_gross_cost, accuracy = 0.01),
+    avg_cpa = scales::dollar(avg_cpa, accuracy = 0.01),
+    avg_ctr = scales::percent(avg_ctr, accuracy = 0.01),
+    avg_conv_rate = scales::percent(avg_conv_rate, accuracy = 0.01)
+  ) |>
+  kable(format = "html",
+        col.names = c("device make", "total impressions", "total clicks", "total conversions", "total cost", "avg cpa", "avg ctr", "avg conv. rate")) |>
+  print()
+```
+
+```{r analyze creative - data}
+# analyze performance by ad size and the text message used
+
+# performance by creative size 
+size_performance <- dat_kpis |>
+  group_by(creative_size) |>
+  summarise(
+    total_impressions = sum(impressions),
+    total_clicks = sum(clicks),
+    total_conversions = sum(total_conversions),
+    total_gross_cost = sum(gross_cost),
+    # calculate overall cpa for the creative size
+    avg_cpa = ifelse(total_conversions > 0, total_gross_cost / total_conversions, na_real_),
+    # calculate overall ctr for the creative size
+    avg_ctr = ifelse(total_impressions > 0, total_clicks / total_impressions, 0),
+    .groups = 'drop'
+  ) |>
+  # sort by number of impressions to see most used sizes first
+  arrange(desc(total_impressions))
+
+# performance by creative message
+message_performance <- dat_kpis |>
+  group_by(creative_messaging) |>
+  summarise(
+    total_impressions = sum(impressions),
+    total_clicks = sum(clicks),
+    total_conversions = sum(total_conversions),
+    total_gross_cost = sum(gross_cost),
+    # calculate overall cpa for the message
+    avg_cpa = ifelse(total_conversions > 0, total_gross_cost / total_conversions, na_real_),
+    # calculate overall conversion rate for the message
+    avg_conv_rate = ifelse(total_clicks > 0, total_conversions / total_clicks, 0),
+    .groups = 'drop'
+  ) |>
+  # sort by cost-effectiveness (lowest cpa)
+  arrange(avg_cpa)
+```
+
+```{r analyze creative - kable, results='asis'}
+# --- performance by creative size ---
+cat("\n\n### Performance by Creative Size (Sorted by Impressions)\n")
+size_performance |>
+  mutate(
+    total_impressions = scales::comma(total_impressions, accuracy = 1),
+    total_clicks = scales::comma(total_clicks, accuracy = 1),
+    total_conversions = scales::comma(total_conversions, accuracy = 1),
+    total_gross_cost = scales::dollar(total_gross_cost, accuracy = 0.01),
+    avg_cpa = scales::dollar(avg_cpa, accuracy = 0.01),
+    avg_ctr = scales::percent(avg_ctr, accuracy = 0.01)
+  ) |>
+  kable(format = "html",
+        col.names = c("creative size", "total impressions", "total clicks", "total conversions", "total cost", "avg cpa", "avg ctr")) |>
+  print()
+
+# --- performance by creative message ---
+cat("\n\n### Performance by Creative Message (Sorted by CPA)\n")
+message_performance |>
+  mutate(
+    total_impressions = scales::comma(total_impressions, accuracy = 1),
+    total_clicks = scales::comma(total_clicks, accuracy = 1),
+    total_conversions = scales::comma(total_conversions, accuracy = 1),
+    total_gross_cost = scales::dollar(total_gross_cost, accuracy = 0.01),
+    avg_cpa = scales::dollar(avg_cpa, accuracy = 0.01),
+    avg_conv_rate = scales::percent(avg_conv_rate, accuracy = 0.01)
+  ) |>
+  kable(format = "html",
+        col.names = c("creative messaging", "total impressions", "total clicks", "total conversions", "total cost", "avg cpa", "avg conv. rate")) |>
+  print()
+```
+
+
+### EXPERIMENTAL
+```{r find count of rows for each exchange, as well as summary of data}
+# for counts, the simplest function is count()
+# the 'sort = TRUE' argument shows the highest counts at the top
+
+# Top 10 app_url counts
+app_url_counts <- dat_kpis |>
+  count(app_url, sort = TRUE)
+
+# Top 10 exchange counts
+exchange_counts <- dat_kpis |>
+  count(exchange, sort = TRUE) 
+
+# print the results
+print("Top 10 App/URL Counts (by row count)")
+print(app_url_counts)
+
+print("Top 10 Exchange Counts (by row count)")
+print(exchange_counts)
+```
+
+

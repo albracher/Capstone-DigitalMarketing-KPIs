@@ -1,0 +1,23 @@
+---
+title: "capstone visualizations - spatial"
+format: html
+---
+
+```{r setup and data import}
+ 
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(broom)
+library(janitor)
+library(skimr)
+library(tinytex)
+library(writexl)
+library(pillar)
+library(knitr)
+library(scales)
+library(DT)
+
+location_all_kpis <- read_csv("data/location_all_kpis.csv")
+```
+

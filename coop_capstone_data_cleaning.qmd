@@ -1,0 +1,302 @@
+---
+title: "capstone-data-cleaning"
+format: html
+editor: visual
+---
+
+```{r setup/install, include=FALSE}
+packages <- c(
+  "tidyverse", "broom", "janitor", "skimr", 
+  "tinytex", "writexl")
+
+installed_packages <- packages %in% rownames(installed.packages())
+
+if (any(installed_packages == FALSE)) {
+  install.packages(packages[!installed_packages])
+}
+
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r import and look at data}
+library(tidyverse)
+library(broom)
+library(janitor)
+library(skimr)
+library(tinytex)
+library(writexl)
+library(stringr)
+
+dat <- read_csv("data/PBL_DA_SP25_CAPSTONE_DATA.csv")
+```
+
+```{r look at col names}
+names(dat)
+```
+
+```{r rows with na data}
+rows_with_na <- dat[!complete.cases(dat), ]
+
+# print the rows containing NA values
+print(rows_with_na)
+```
+
+```{r clean p1}
+dat_clean <- dat |> 
+  clean_names() |> 
+  drop_na()
+
+names(dat_clean)
+
+# glimpse
+glimpse(dat_clean)
+```
+
+```{r clean p2}
+dat_clean |> skim()
+```
+
+```{r clean audience_segment (combined)}
+# clean up the delimiters and hierarchy in the audience column all at once
+
+dat_clean <- dat_clean |> 
+  mutate(
+    # fix delimiters
+    # 1. fixing the common encoding error by replacing the corrupted 'Â»' with a clean delimiter '>'
+    audience_segment = str_replace_all(audience_segment, "Â»", ">"),
+    
+    # 2. replacing the remaining double-chevron ' »' (which sometimes has a hidden space) with a clean delimiter '>'
+    audience_segment = str_replace_all(audience_segment, " »", ">"), 
+    
+    # 3. removing the unnecessary '<bb>' tag/separator entirely
+    audience_segment = str_replace_all(audience_segment, "<bb>", ""),
+    
+    # fix hierarchy
+    # using "-" instead of ">", fix
+    # this first one fixes the "Mobile - US>" problem specifically
+    audience_segment = str_replace_all(audience_segment, "Mobile - US>", "Mobile>US>"),
+    
+    # this one is a catch-all for any other " - " we found
+    audience_segment = str_replace_all(audience_segment, " - ", ">"),
+    
+    # fix spacing
+    # normalize spacing around the cleaned delimiters to remove all adjacent whitespace
+    # 1. remove all spaces adjacent to the delimiter. 
+    #    this is the core step that makes ' a > b ' or 'a> b' become 'a>b', 
+    #    resulting in the clean 'level1>level2>level3' format.
+    audience_segment = stringr::str_replace_all(audience_segment, "\\s*\\>\\s*", ">"),
+    
+    # 2. final cleanup: removing any leading or trailing spaces from the whole string
+    audience_segment = stringr::str_trim(audience_segment),
+    
+    # 3. squishing any instances of multiple spaces left in the values themselves (e.g. 'united  states')
+    audience_segment = stringr::str_squish(audience_segment) 
+  )
+
+# uncomment to check
+# head(dat_clean)
+```
+
+```{r manual location looking}
+# GOAL: find what "locations" are normal, as in, follow the city, state format
+# find what locations do not follow the standardized format, and could be multiple cities, or city1-city2 format/DMA format
+# manually verify with google maps, then check gemini
+
+# "Orlando-Daytona Beach, Florida"
+# "Grand Rapids-Kalamazoo, Michigan"  
+# "Champaign & Springfield-Decatur,Illinois" 
+# "Ft. Myers-Naples, Florida"  
+# "Miami-Ft. Lauderdale, Florida"  
+# "Tampa-St Petersburg (Sarasota), Florida"  
+# "West Palm Beach-Ft. Pierce, Florida"  
+# "Flint-Saginaw-Bay City, Michigan"    
+# "Tallahassee, Florida-Thomasville, Georgia"
+# "Tri-Cities, Tennessee-Virginia"  
+# "South Bend-Elkhart, Indiana"
+# "Mobile, Alabama-Pensacola, Florida"   
+# "Huntsville-Decatur (Florence), Alabama" 
+# "Peoria-Bloomington, Illinois"   
+# "Hattiesburg-Laurel, Mississippi" 
+# "Little Rock-Pine Bluff, Arkansas"     
+ 
+```
+
+```{r split and clean location}
+# start with the cleaned data
+dat_clean_sep_state <- dat_clean |>
+  # step 1: initial split of location into city_raw and state_raw
+  separate(
+    col = location,
+    into = c("city_raw", "state_raw"), # use temporary names
+    sep = ",",                         # split by comma
+    remove = FALSE,                    # keep original location column
+    fill = "right",                    # handle rows with no comma
+    extra = "merge"                    # handle rows with multiple commas
+  ) |>
+  # step 2: trim whitespace from the raw split columns
+  mutate(
+    city_raw = str_trim(city_raw),
+    state_raw = str_trim(state_raw)
+  ) |>
+  # step 3: manually correct the few specific messy state strings
+  mutate(
+    state = case_when(
+      state_raw == "Florida-Thomasville, Georgia" ~ "Florida",
+      state_raw == "Alabama-Pensacola, Florida" ~ "Alabama",
+      state_raw == "Tennessee-Virginia" ~ "Tennessee",
+      TRUE ~ state_raw
+    )
+  ) |>
+  # step 4: extract primary city name, handling "tri-cities" specifically
+  mutate(
+    # split city_raw by hyphen or ampersand (needed for most dmas)
+    city_parts = stringr::str_split(city_raw, pattern = "\\s*[-&]\\s*"),
+
+    # extract the first part, but use case_when for the "tri-cities" exception
+    city_primary = case_when(
+      # specifically handle "tri-cities" before applying the general rule
+      startsWith(city_raw, "Tri-Cities") ~ "Tri-Cities",
+      # default rule: extract the first part from the split list
+      TRUE ~ sapply(city_parts, function(parts) parts[1])
+    ),
+
+    # clean up the extracted primary city
+    city_primary = str_remove(city_primary, ",$"),
+    city_primary = str_trim(city_primary),
+    state = str_trim(state)
+  ) |>
+  # step 5: select final columns and remove temporary ones
+  select(location, city = city_raw, state, city_primary, everything(), -city_parts) # remove city_parts here
+```
+
+```{r split and clean location - manually check}
+# manually check cities, states, etc
+# unique cities (original raw city/dma names)
+unique_cities <- dat_clean_sep_state |>
+  pull(city) |>  # extract the column as a vector
+  unique() |>   # get only unique values
+  sort()        # sort alphabetically
+
+print("--- Unique Raw Cities (Alphabetical) ---")
+print(unique_cities)
+
+# unique primary cities (cleaned single city names)
+unique_cities_primary <- dat_clean_sep_state |>
+  pull(city_primary) |>
+  unique() |>
+  sort()
+
+print("--- Unique Primary Cities (Alphabetical) ---")
+print(unique_cities_primary)
+
+# unique states (cleaned state names)
+unique_states <- dat_clean_sep_state |>
+  pull(state) |>
+  unique() |>
+  sort()
+
+print("--- Unique States (Alphabetical) ---")
+print(unique_states)
+
+```
+
+```{r fix cpg audience segments}
+# # check the resulting rows, i manually fixed them in excel
+# this brings that manual fix into the r script to make it reproducible
+
+dat_clean_sep_state <- dat_clean_sep_state |> 
+  mutate(
+    # replace this line with whatever logic you used in excel
+    # e.g., if you replaced "CPG" with "CPG>General", it would be:
+    audience_segment = str_replace_all(audience_segment, "CPG", "CPG>General")
+  )
+
+# # check the resulting rows
+# cpg_rows <- dat_clean_sep_state |>
+#  filter(stringr::str_detect(audience_segment, "CPG"))
+# print(cpg_rows)
+```
+
+```{r kpis}
+# # calculate kpis for each row/campaign
+
+dat_kpis <- dat_clean_sep_state |>
+  mutate(
+    # ctr: clicks / impressions
+    ctr = ifelse(impressions > 0, clicks / impressions, 0),
+
+    # conversion rate (cr): total conversions / clicks
+    conv_rate = ifelse(clicks > 0, total_conversions / clicks, 0),
+    
+    # cpa (cost per acquisition): gross cost / total conversions
+    # use na_real_ if conversions are zero, as cpa is meaningless/infinite in that case
+    # na_real_ just refers to doubles/values with decimal points
+    cpa = ifelse(total_conversions > 0, gross_cost / total_conversions, NA_real_),
+
+    # cpc: gross cost / clicks
+    cpc = ifelse(clicks > 0, gross_cost / clicks, NA_real_), 
+    
+    # eCPM: (gross cost / impressions) * 1000
+    eCPM = ifelse(impressions > 0, (gross_cost / impressions) * 1000, 0),
+    
+    
+    # viewability rate: viewable impressions / measurable impressions
+    view_rate = ifelse(measurable_impressions > 0, viewable_impressions / measurable_impressions, 0),
+    
+    # vCPM: (gross cost / viewable impressions) * 1000
+    # use na_real_ if viewable impressions are zero
+    vCPM = ifelse(viewable_impressions > 0, (gross_cost / viewable_impressions) * 1000, NA_real_)
+  )
+
+# # check the new kpi columns
+head(dat_kpis |> 
+       select(impressions, clicks, total_conversions, gross_cost, ctr, cpa, view_rate))
+```
+
+### BUG: Some conversion rates are above 100%, or 1.00
+
+```{r view conversion rates above 1.00}
+# we found bug: basically, some conversion rates are above 100%, or 1.00
+# this would imply that there are more conversions than clicks, which cannot be a thing
+impossible_cr_rows <- dat_kpis |>
+  filter(conv_rate > 1) |>
+  select(impressions, clicks, total_conversions, gross_cost, conv_rate, location, audience_segment, app_url)
+
+# print("--- Rows with Conversion Rate > 100% ---")
+# print(impossible_cr_rows)
+```
+
+### Capped conversion rates at 100%, or 1.00
+
+```{r cap conversion_rates at 1}
+# tl;dr: cap conversion rates at 100%, if they are over 100%
+
+# find rows where calculated conversion rate is > 1
+unrealistic_conv_rate_rows <- which(dat_kpis$conv_rate > 1)
+
+# print how many rows are affected
+# print(paste("Number of rows with conv_rate > 100%:", length(unrealistic_conv_rate_rows)))
+
+# cap the conversion rate at 1 (100%) for these rows
+# note: this doesn't fix the underlying issue but prevents impossible averages
+if (length(unrealistic_conv_rate_rows) > 0) {
+  dat_kpis$conv_rate[unrealistic_conv_rate_rows] <- 1
+  # print("Capped conv_rate at 1 for affected rows")
+}
+
+# calculated from the (potentially inflated) conversion count
+```
+
+```{r SET DATA AS CSV AND XLSX}
+# dat_clean_sep_state |>
+#   write_xlsx("data/dat_clean_sep_state.xlsx")
+# 
+# dat_clean_sep_state |>
+#   write_csv("data/dat_clean_sep_state.csv")
+
+dat_kpis |> 
+  write_xlsx("data/dat_kpis.xlsx")
+
+dat_kpis |> 
+  write_csv("data/dat_kpis.csv")
+```

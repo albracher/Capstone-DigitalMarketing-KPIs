@@ -1,0 +1,1191 @@
+---
+title: "capstone data analysis - spatial"
+format: html
+---
+
+### RUN DATA CLEANING QMD FIRST
+
+```{r setup and data import}
+ 
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(broom)
+library(janitor)
+library(skimr)
+library(tinytex)
+library(writexl)
+library(pillar)
+library(knitr)
+library(scales)
+library(DT)
+
+dat_kpis <- read_csv("data/dat_kpis.csv")
+```
+
+```{r increase display size}
+# tl;dr show more data on one screen
+# increase the number of columns printed on screen
+options(pillar.width = Inf) # try to use full width of document
+options(pillar.max_footer_lines = 3) # allows more lines in the footer if columns are truncated
+```
+
+# Data Glossary
+
+Here's an explanation of each column in the final `dat_kpis` dataset:
+
+## Original & Cleaned Location Columns
+
+-   **`location`**: The original, raw location string as it appeared in the input data (e.g., "Orlando-Daytona Beach, Florida", "Mobile, Alabama-Pensacola, Florida").
+-   **`city`**: The city part extracted directly after splitting the location string by the first comma. This might contain multiple city names or DMA names (e.g., "Orlando-Daytona Beach", "Champaign & Springfield-Decatur").
+-   **`state`**: The cleaned and standardized state name, corrected for cross-state DMA entries (e.g., "Florida", "Alabama", "Tennessee").
+-   **`city_primary`**: The single, primary city name extracted from the `city` column, intended for geocoding and mapping (e.g., "Orlando", "Champaign", "Mobile", "Los Angeles").
+-   **`state_raw`**: A temporary column holding the state information immediately after the initial separate split, before manual corrections were applied (e.g., "Florida", "Alabama-Pensacola, Florida").
+
+## Ad Details & Targeting Columns
+
+-   **`audience_segment`**: Describes the target audience characteristics or online behavior used for showing the ad (e.g., "Online Behavior\>United States\>Finance\>Financial Planning...").
+-   **`creative_size`**: The dimensions of the ad creative in pixels (e.g., "300x250", "320x50").
+-   **`creative_messaging`**: The marketing message or call to action used in the ad (e.g., "Subscribe Today - 10% Discount", "Sign up Now - 10% Off").
+-   **`app_url`**: The specific website or app where the ad impression occurred (e.g., "accuweather.com", "cnn.com").
+-   **`exchange`**: The advertising technology platform that facilitated the ad serving (e.g., "Google Ad Manager", "PubMatic").
+-   **`device_make`**: The type of device on which the ad was displayed (e.g., "Smartphone", "Apple PC", "Windows PC").
+
+## Core Performance Metrics
+
+-   **`impressions`**: The total number of times the ad was displayed.
+-   **`clicks`**: The total number of times the ad was clicked.
+-   **`viewable_impressions`**: The number of impressions where the ad met industry standards for actually being considered viewable by a user.
+-   **`measurable_impressions`**: The number of impressions for which viewability could be technically measured.
+-   **`total_conversions`**: The number of times a desired action (like a sign-up or purchase) was completed after a user clicked the ad.
+-   **`gross_cost`**: The total amount spent for the ad impressions/clicks listed in that row.
+
+## Calculated KPIs
+
+-   **`ctr` (Click-Through Rate)**: $(\frac{\text{clicks}}{\text{impressions}})$. Shows the percentage of impressions that led to a click.
+-   **`conv_rate` (Conversion Rate/CVR)**: $(\frac{\text{total\_conversions}}{\text{clicks}})$. Shows the percentage of clicks that led to a conversion.
+-   **`cpa` (Cost Per Acquisition)**: $(\frac{\text{gross\_cost}}{\text{total\_conversions}})$. The average cost to acquire one conversion. ($\text{NA}$ if conversions $\text{= 0}$).
+-   **`cpc` (Cost Per Click)**: $(\frac{\text{gross\_cost}}{\text{clicks}})$. The average cost for each click. ($\text{NA}$ if clicks $\text{= 0}$).
+-   **`ecpm` (Effective Cost Per Mille/Thousand)**: $(\frac{\text{gross\_cost}}{\text{impressions}}) \times 1000$. The cost for one thousand impressions.
+-   **`view_rate` (Viewability Rate)**: $(\frac{\text{viewable\_impressions}}{\text{measurable\_impressions}})$. The percentage of measurable impressions that were actually viewable.
+-   **`vcpm` (Viewable Cost Per Mille/Thousand)**: $(\frac{\text{gross\_cost}}{\text{viewable\_impressions}}) \times 1000$. The cost for one thousand viewable impressions. ($\text{NA}$ if viewable_impressions $\text{= 0}$).
+
+------------------------------------------------------------------------
+
+# Identify which Locations were the most cost effective (CPA, CVR, CPC)
+
+## Calculating KPIs Per City/Location
+
+```{r locations by all kpis - data, echo = TRUE}
+# let's figure out which cities spent money most efficiently (all kpis)
+
+# first, group everything by our clean city name and state
+location_all_kpis <- dat_kpis |>
+  group_by(city_primary, state) |> # group by sets the stage for aggregation, adds grouping structure to the data frame so we can look at data
+  # for each city/state combo, calc totals 
+  summarise(
+    # find total num, conversions
+    total_conversions = sum(total_conversions),
+    # total up cost for each location
+    total_gross_cost = sum(gross_cost),
+    # add total clicks for cvr and cpc calcs
+    total_clicks = sum(clicks),
+    # add impression metrics for branding kpis
+    total_impressions = sum(impressions),
+    total_measurable_impressions = sum(measurable_impressions),
+    total_viewable_impressions = sum(viewable_impressions),
+    
+    # --- direct response kpis ---
+    # calculate the overall cost per conversion (cpa) for this specific location  
+    # lower cpa = cheaper to convert people 
+    # we check if total_conversions is > 0 to avoid dividing by zero 
+    avg_cpa = ifelse(total_conversions > 0, total_gross_cost / total_conversions, na_real_),
+    
+    # calculate overall conversion rate (cvr)
+    avg_conv_rate = ifelse(total_clicks > 0, total_conversions / total_clicks, 0),
+    # calculate overall cost per click (cpc)
+    avg_cpc = ifelse(total_clicks > 0, total_gross_cost / total_clicks, na_real_),
+    
+    # --- branding kpis ---
+    # calculate overall ctr
+    avg_ctr = ifelse(total_impressions > 0, total_clicks / total_impressions, 0),
+    # calculate overall viewability rate
+    avg_view_rate = ifelse(total_measurable_impressions > 0, total_viewable_impressions / total_measurable_impressions, 0),
+    # calculate overall vcpm (cost per thousand viewable impressions)
+    avg_vcpm = ifelse(total_viewable_impressions > 0, (total_gross_cost / total_viewable_impressions) * 1000, na_real_),
+    
+    # ungroup after summarise
+    .groups = 'drop'
+  ) |>
+  # only keep locations that had at least 5 conversions, average cpa is more reliable
+  filter(total_conversions >= 5) |>
+  # finally, sort the whole table by the average cpa
+  arrange(desc(avg_cpa)) |> 
+  mutate(
+    avg_cpa = round(avg_cpa, 2),
+    # round new kpis as well
+    avg_conv_rate = round(avg_conv_rate, 4),
+    avg_cpc = round(avg_cpc, 2),
+    # round branding kpis
+    avg_ctr = round(avg_ctr, 4),
+    avg_view_rate = round(avg_view_rate, 4),
+    avg_vcpm = round(avg_vcpm, 2)
+  )
+
+# group by/sort by avg_cpa but aggregate by city_primary and state
+# group by defines categories within data based on variables
+# aggregation calculates summary statistics across groups we've defined
+```
+
+## Identifying Avg Performance Metrics Per City/Location
+
+```{r city branding metrics - data - data summary check}
+# location_all_kpis |> 
+#   skim()
+```
+
+```{r performance metrics by city - data}
+# create the table data for the most cost-effective locations
+top_locations_table <- location_all_kpis |> 
+    tail(20) |> 
+    select(city_primary, state, avg_cpa, avg_conv_rate, avg_cpc) |> 
+    # re-sort to show the lowest cpa first (ascending)
+    arrange(avg_cpa)
+
+# create the table data for the least cost-effective locations
+bottom_locations_table <- location_all_kpis |> 
+    head(20) |> 
+    select(city_primary, state, avg_cpa, avg_conv_rate, avg_cpc) |> 
+    # keep the order to show the highest cpa first (descending)
+    arrange(desc(avg_cpa))
+```
+
+```{r performance metrics by city - kable, results = 'asis'}
+# --- output the most cost-effective locations (lowest cpa) ---
+# use kable to render an html table
+top_locations_table |> 
+    mutate(
+      avg_cpa = scales::dollar(avg_cpa), # format cpa as currency (auto-rounds to 2 decimals)
+      avg_conv_rate = scales::percent(avg_conv_rate, accuracy = 0.01),
+      avg_cpc = scales::dollar(avg_cpc)
+    ) |> 
+    kable(format = "html", 
+          caption = "20 Most Cost-Effective Locations by Average CPA", 
+          col.names = c("Primary City", "State", "Avg CPA", "Avg CVR", "Avg CPC")) |>
+    print()
+
+# --- output the least cost-effective locations (highest cpa) ---
+
+# use kable to render an html table
+bottom_locations_table |> 
+    mutate(
+      avg_cpa = scales::dollar(avg_cpa), # format cpa as currency
+      avg_conv_rate = scales::percent(avg_conv_rate, accuracy = 0.01),
+      avg_cpc = scales::dollar(avg_cpc)
+    ) |> 
+    kable(format = "html", 
+          caption = "20 Least Cost-Effective Locations by Average CPA", 
+          col.names = c("Primary City", "State", "Avg CPA", "Avg CVR", "Avg CPC")) |>
+    print()
+```
+
+## Identifying Avg Branding Metrics Per City/Location
+
+```{r city branding metrics - data}
+# now that we have all kpis, let's find the top cities for branding
+
+# first, calculate the 25th percentile (q1) for our stability metrics
+q1_impressions <- quantile(location_all_kpis$total_impressions, 0.25)
+q1_measurable <- quantile(location_all_kpis$total_measurable_impressions, 0.25)
+q1_viewable <- quantile(location_all_kpis$total_viewable_impressions, 0.25)
+
+# top 15 cities by ctr (most engaging ads)
+top_ctr_locations <- location_all_kpis |>
+  filter(total_impressions > q1_impressions) |> # filter by 25th-100th percentile
+  arrange(desc(avg_ctr)) |>
+  head(15)
+  
+# top 15 cities by viewability rate (ads most likely to be seen)
+top_view_rate_locations <- location_all_kpis |>
+  filter(total_measurable_impressions > q1_measurable) |> # filter by 25th-100th
+  arrange(desc(avg_view_rate)) |>
+  head(15)
+
+# top 15 cities by vcpm (cheapest viewable impressions)
+top_vcpm_locations <- location_all_kpis |>
+  filter(total_viewable_impressions > q1_viewable) |> # filter by 25th-100th
+  arrange(avg_vcpm) |>
+  head(15)
+```
+
+```{r city branding ctr - kable, results='asis'}
+# --- top 15 locations by ctr ---
+cat("### Top 15 locations by CTR (>224k impressions)\n")
+top_ctr_locations |>
+  select(city_primary, state, avg_ctr, total_clicks, total_impressions) |>
+  mutate(
+    avg_ctr = scales::percent(avg_ctr, accuracy = 0.01),
+    total_clicks = scales::comma(total_clicks, accuracy = 1),
+    total_impressions = scales::comma(total_impressions, accuracy = 1)
+  ) |>
+  kable(format = "html", col.names = c("City", "State", "Average CTR", "Total Clicks", "Total Impressions"))
+```
+
+```{r city branding viewability - kable, results='asis'}
+# --- top 15 locations by viewability rate ---
+cat("### Top 15 Locations by Viewability rate (>~154k measurable impressions)\n")
+top_view_rate_locations |>
+  select(city_primary, state, avg_view_rate, total_viewable_impressions) |>
+  mutate(
+    avg_view_rate = scales::percent(avg_view_rate, accuracy = 0.01),
+    total_viewable_impressions = scales::comma(total_viewable_impressions, accuracy = 1)
+  ) |>
+  kable(format = "html", col.names = c("City", "State", "Average View Rate", "Total Viewable Impressions"))
+```
+
+```{r city branding vcpm - kable, results='asis'}
+# --- top 15 locations by vcpm (cheapest viewable cost per mille/thousand impressions) ---
+cat("### Top 15 Locations by vCPM (>~53k viewable impressions)\n")
+top_vcpm_locations |>
+  select(city_primary, state, avg_vcpm, total_viewable_impressions) |>
+  mutate(
+    avg_vcpm = scales::dollar(avg_vcpm, accuracy = 0.01),
+    total_viewable_impressions = scales::comma(total_viewable_impressions, accuracy = 1)
+  ) |>
+  kable(format = "html", col.names = c("City", "State", "Average vCPM", "Total Viewable Impressions"))
+```
+
+```{r city branding metrics - plots with labels, fig.height=5, fig.width=8}
+library(scales)
+
+# --- Plot 1: Top 15 Locations by CTR (with Labels) ---
+p1 <- top_ctr_locations |>
+  ggplot(aes(x = reorder(city_primary, avg_ctr), y = avg_ctr)) +
+  geom_col(fill = "#4e79a7", width = 0.7) + 
+  # This adds the label to the end of the bar
+  geom_text(aes(label = percent(avg_ctr, accuracy = 0.01)), 
+            hjust = -0.1, size = 3.5) + 
+  coord_flip() +
+  # expand adds a little extra space on the right so labels fit
+  scale_y_continuous(labels = scales::percent_format(accuracy = 0.1), 
+                     expand = expansion(mult = c(0, 0.15))) +
+  labs(
+    title = "Top 15 Locations by CTR",
+    subtitle = ">224k Impressions",
+    x = NULL,
+    y = "Average CTR"
+  ) +
+  theme_minimal() +
+  theme(panel.grid.major.y = element_blank())
+
+print(p1)
+
+# --- Plot 2: Top 15 Locations by Viewability Rate (with Labels) ---
+p2 <- top_view_rate_locations |>
+  ggplot(aes(x = reorder(city_primary, avg_view_rate), y = avg_view_rate)) +
+  geom_col(fill = "#59a14f", width = 0.7) +
+  geom_text(aes(label = percent(avg_view_rate, accuracy = 0.1)), 
+            hjust = -0.1, size = 3.5) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1), 
+                     expand = expansion(mult = c(0, 0.15))) +
+  labs(
+    title = "Top 15 Locations by Viewability Rate",
+    subtitle = ">154k Measurable Impressions",
+    x = NULL,
+    y = "Average View Rate"
+  ) +
+  theme_minimal() +
+  theme(panel.grid.major.y = element_blank())
+
+print(p2)
+
+# --- Plot 3: Top 15 Locations by vCPM (with Labels) ---
+p3 <- top_vcpm_locations |>
+  ggplot(aes(x = reorder(city_primary, -avg_vcpm), y = avg_vcpm)) +
+  geom_col(fill = "#e15759", width = 0.7) +
+  geom_text(aes(label = dollar(avg_vcpm)), 
+            hjust = -0.1, size = 3.5) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::dollar_format(), 
+                     expand = expansion(mult = c(0, 0.15))) +
+  labs(
+    title = "Top 15 Locations by vCPM (Most Cost-Effective)",
+    subtitle = ">53k Viewable Impressions",
+    x = NULL,
+    y = "Average vCPM ($)"
+  ) +
+  theme_minimal() +
+  theme(panel.grid.major.y = element_blank())
+
+print(p3)
+```
+
+
+## Observations for "Identify which locations were the most cost effective"
+
+### ***Looking at pure average CPA per location:***
+
+Generally, we have a large range of numbers.
+
+**In terms of "pure" CPA**, looking at performance metrics first we can see that **Lafayette** costs the least per acquisition, and conversion rate/cost per click is also pretty good in comparison to a lot of other places. **Lafayette** also has the lowest vCPM, so we know that, in terms of pure viewable cost per thousand, we're doing great for cost effectiveness. In terms of high conversion rates, as well as **low avg CPA and middling avg CPC**, we see **Ft. Wayne, Panama City, and Augusta**, all of which have great numbers. Per acquisition, they're relatively low; conversion rates are higher than the usual numbers. **South Bend** and **Mobile** are also interesting because they have **great avg CPA/CVR numbers**, but their CPCs are a lot higher than the other 20 most cost-effective locations. **West Palm Beach** is also awesome numbers wise, but the **CPA is right in the middle, even if the CVR/CPC rates are better**.
+
+If we look at avg branding metrics per city/location, then things start to change.
+
+### ***Looking at average click-through rates:***
+
+Although cities like **Champaign, Tampa, Grand Rapids, West Palm Beach**, and **Augusta** have the highest click-through rates, this becomes a question of whether or not this is really worth it. Of those five cities, the only one that's anywhere near the top 20 most cost-effective locations, by average CPA, is **Augusta**. Even then, **Augusta** is the 7th most cost-effective location, based on average CPA.
+
+Some other interesting finds are **Ft. Wayne, Nashville, and South Bend**. They're all in the top 15 locations by click-through rate, at the **11th, 12th, and 13th** top locations by click-through rate (respectively) but also in the **2nd**, **15th, and 12th** most cost-effective locations by average CPA.
+
+### ***Looking at average viewability rates:***
+
+If we look at **viewability rates**, some cities that we're seeing, once again, are **Toledo, Nashville, Los Angeles, Augusta, Chicago, Miami, and Memphis.** Each of these cities are, in terms of pure viewability rate, **1st, 4th, 5th, 6th, 8th, 11th, and 13th** in terms of cities with the highest avg view rate. In terms of the most cost-effective cities by CPA, they rank **5th, 4th, 14th, 7th, 11th, 8th, and 13th**, respectively.
+
+So, we can see here that in terms of **viewability rates** and **avg CPA, Toledo, Nashville, Augusta, Los Angeles, and Chicago** are all great cities. Of note as well: **Chicago** had an insane number of total viewable impressions at around **14.1 million.** **Los Angeles** also had a ton, at just **about** **6.8 million.** In terms of the rest of the cities, **Nashville** **had** **around** **2.3 million, Toledo had 155,722,** and **Augusta had** **106,963.**
+
+Something to keep in mind is that although **Toledo** had the highest average view rate, the number of total viewable impressions just wasn't as high as **Chicago/Los Angeles**. Therefore, **Toledo** may have good general statistics but not a great number of total viewable impressions. As a sneak peek we can see that **Toledo** also has a low average **vCPM**, which would give off the impression it's a great city to deploy ads to. Again, however, the number of total viewable impressions aren't amazing, though.
+
+**Augusta** was another "small city": although **average view rate was at 61.05%**, the number of **total viewable impressions was "only" 106,963**.
+
+On the other hand, **Los Angeles and Chicago** had around a **60%** **average view rate** but had far more viewable impressions, in the millions. Even at being the **14th and 11th** most cost-effective locations, they still brought in a very good amount of views.
+
+To close out this discussion: although we need to talk about average vCPM, there is no "perfect" city, but rather a lot of "in between" cities in terms of cost vs. branding metrics.
+
+### ***Looking at average vCPM, or (v)iewable Cost Per Mille/Thousand:***
+
+So, let's look at average vCPM (which should, in theory, should kind of go hand in hand with average CPA, right). We can think of vCPM as the cost of just... having our ads *potentially seen*, while avg CPA refers to the cost of "actual conversions", in a sense.
+
+Some particular standouts, once again, are **Lafayette, Toledo, Chicago, Los Angeles, San Francisco, Ft. Wayne, Miami, Memphis, and Nashvile.** I would say Shreveport is a standout, but given the context of the rest of what we've looked at so far, it's not a *standout*, per se. Although average vCPM is low, so is the number of total viewable impressions.
+
+Now that we've seen all the general "cost effective" metrics, we can start to break things down in full.
+
+## ***So, what cities/locations work across the board?***
+
+I think there's three main general "tiers" of cities.
+
+### **The "best all-around markets":**
+
+-   disclaimer: when metrics mentioned, it's usually mentioning average metric, not median/50th percentile (also i asked gemini to summarize a lot of this, but i wrote the stuff before this section)
+
+-   **Augusta** is a great city, and appears on most of the "top" lists with a low(ish) avg CPA, high avg CVR, high CTR, high average view rate, and low vCPM.
+
+    -   Its main weakness is lower scale: Augusta only really had **106,963** total viewable impressions.
+
+-   **Ft. Wayne** is another great city: it has low CPA, high CVR, relatively good engagement (11th by CTR), and it's also pretty cheap for branding (nowhere to be found for top viewability rate, but relatively low vCPM).
+
+    -   Its main weakness is also scale **(only 293,919 viewable impressions)** and that the average view rate was quite low
+
+-   **Nashville** was another great balanced contender, being cost-effective in CPA, relatively high engaging (12th in CTR), and a high average view rate (14th). Nashville was totally one of the larger cities, or at least, had a larger number of total viewable impressions at around **2.3 million total viewable impressions.** It also had a relatively low vCPM, coming in at the 15th "cheapest" in terms of vCPM.
+
+-   **Lafayette** was great in terms of pure average CPA and vCPM, coming in at number one.
+
+    -   Unfortunately, the total viewable impressions was somewhat low, and it didn't come up in viewability rate, or average CTR.
+
+    -   Therefore, by nature, the actual view rate wasn't great.
+
+    -   However, in terms of the entire dataset, in terms of a smaller market, it had the **lowest CPA** and lowest **vCPM.**
+
+### **Scale vs. Efficiency**
+
+-   So, to start off: let's talk about **high volume, "good-enough cost"/major cities**
+
+    -   **Chicago** and **Los Angeles** have lots of impressions, which makes sense because they **are** major cities. Both cities had lots of viewable impressions as well as viewability rates. Although their CPAs weren't great (11th and 14th, respectively), their vCPMs were in the top 10. Therefore, we could consider both of them **"high volume"** and **"good-enough cost"**
+
+-   Next, we have the **low volume** but **great general stats cities**
+
+    -   **Toledo** was a very "cheap" city in general, being 5th in CPA and 2nd in vCPM. However, **Toledo** didn't have many viewable impressions, coming in at around 155,722. However, one weakness was that click through rate wasn't great. Hence, **Toledo** had super **low volume** but great general stats
+
+### **Branding Only**
+
+-   dawg i'm tired
+
+-   **Champaign, Tampa, and Grand Rapids** have great CTRs but aren't cost effective at all.
+
+    -   Hence, although they have good engagement the conversions aren't great, and they're expensive
+
+### **"Diagnostic Cases"/Flawed Cases**
+
+-   **South Bend** and **Mobile** have great average CPA/CVR numbers but their CPCs are way higher
+
+    -   The ad marketplace is quite... expensive, cost per click is really bad compared to other places
+
+    -   So, even though the cost per acquisition and conversion rates are generally pretty good, it's just so expensive to get ***clicks***, this could be for a variety of reasons
+
+------------------------------------------------------------------------
+
+# What are the top/bottom performing States?
+
+## Identifying State Cost Effectiveness By CPA/Conversions/Clicks/Impressions/CPA/CVR/CPC
+
+```{r eda - identify perf by total conversions/cpa per state}
+# aggregate kpis by state to see overall performance
+# so, finding summary statistics across groups we've defined 
+
+state_performance <- dat_kpis |>
+  group_by(state) |>
+  summarise(
+    # calculate total metrics for each state
+    # so, conversions, gross cost, num clicks, total impressions
+    
+    # recall that impressions = total number of times an ad was displayed
+    # viewable impressions = impressions that actually "met a standard"
+    # measurable impressions = impressions where viewability could "technically" be measured and tracked
+    # so, viewable should generally be lower than measurable
+    
+    total_conversions = sum(total_conversions),
+    total_gross_cost = sum(gross_cost),
+    total_clicks = sum(clicks),
+    total_impressions = sum(impressions), # also sum impressions for context
+    
+    # calculate overall cpa for the state (lower is better)
+    # again, cpa = cost per action
+    state_cpa = ifelse(total_conversions > 0, total_gross_cost / total_conversions, na_real_),
+    
+    # calculate overall conversion rate for the state (higher is better)
+    # conv rate = greater percentage of users who clicked ad went on to complete a valuable action, calculate per state
+    state_conv_rate = ifelse(total_clicks > 0, total_conversions / total_clicks, 0),
+    
+    # calculate overall ctr for the state (higher is better)
+    # ctr = click thru rate, percentage of impressions that led to click
+    # higher ctr = good, more impressions that led to click
+    
+    state_ctr = ifelse(total_impressions > 0, total_clicks / total_impressions, 0),
+    
+    # calculate avg cpc (cost per click) - new add !
+    avg_cpc = ifelse(total_clicks > 0, total_gross_cost / total_clicks, na_real_),
+    
+    .groups = 'drop' # ungroup after summarizing
+  )
+```
+
+```{r kable table for identifying total conversion/cpa per state, results = 'asis'}
+# note: this chunk assumes 'state_performance' was created in the previous chunk
+
+# --- analysis based on total conversions ---
+
+# find top 10 states by volume of conversions
+top_states_conversions <- state_performance |>
+  arrange(desc(total_conversions)) |>
+  head(10)
+
+# find bottom 10 states by volume of conversions
+# (excluding states with 0 conversions, as they didn't 'perform' at all)
+bottom_states_conversions <- state_performance |>
+  filter(total_conversions > 0) |>
+  arrange(total_conversions) |> # arrange is ascending by default
+  head(10)
+
+# --- analysis based on cost-effectiveness (cpa/cost per action) ---
+
+# find top 10 states by cost-effectiveness (lowest cpa)
+# let's only consider states with a reasonable number of conversions (e.g., >= 5)
+top_states_cpa <- state_performance |>
+  filter(total_conversions >= 10) |>
+  arrange(state_cpa) |>
+  head(10)
+
+# find bottom 10 states by cost-effectiveness (highest cpa)
+# again, only look at states with >= 5 conversions
+bottom_states_cpa <- state_performance |>
+  filter(total_conversions >= 10) |>
+  arrange(desc(state_cpa)) |>
+  head(10)
+
+# --- output tables using kable ---
+
+# (this code is inside chunk {r identify performance kable, results='asis'})
+
+# helper function to format the state tables consistently
+format_state_table <- function(table_data) {
+  table_data |>
+    mutate(
+      # format numbers with commas
+      total_conversions = scales::comma(total_conversions, accuracy = 1),
+      total_clicks = scales::comma(total_clicks, accuracy = 1),
+      total_impressions = scales::comma(total_impressions, accuracy = 1),
+      # format currency
+      total_gross_cost = scales::dollar(total_gross_cost, accuracy = 0.01),
+      state_cpa = scales::dollar(state_cpa, accuracy = 0.01),
+      # format percentages
+      state_conv_rate = scales::percent(state_conv_rate, accuracy = 0.01),
+      state_ctr = scales::percent(state_ctr, accuracy = 0.01),
+      # --- add this new line for avg_cpc ---
+      avg_cpc = scales::dollar(avg_cpc, accuracy = 0.01)
+    ) |>
+    # create the html table
+    kable(format = "html",
+          # --- add the new column name here ---
+          col.names = c("state", "total conversions", "total cost", "total clicks", "total impressions", "state cpa", "state conv. rate", "state ctr", "avg. cpc"))
+}
+
+# --- top 10 states by total conversions ---
+cat("### Top 10 States by Total Conversions\n")
+top_states_conversions |>
+  format_state_table() |>
+  print()
+
+# --- bottom 10 states by total conversions ---
+cat("### Bottom 10 States by Total Conversions\n")
+bottom_states_conversions |>
+  format_state_table() |>
+  print()
+
+# --- top 5 states by cost-effectiveness (lowest cpa) ---
+cat("### Top 10 States by Cost-Effectiveness (Lowest CPA, >= 5 Conversions)\n")
+top_states_cpa |>
+  format_state_table() |>
+  print()
+
+# --- bottom 5 states by cost-effectiveness (highest cpa) ---
+cat("### Bottom 10 States by Cost-Effectiveness (Highest CPA, >= 5 Conversions)\n")
+bottom_states_cpa |>
+  format_state_table() |>
+  print()
+```
+
+------------------------------------------------------------------------
+
+## Identifying Direct Response (DR) Performance Metrics (CVR, CPC) Per State
+
+```{r analyze state performance - dr metrics (cvr, cpc) - summary of data}
+# analyze general state performance
+state_performance |> 
+  select(total_clicks, state_conv_rate) |> 
+  skim()
+```
+
+```{r analyze state performance - dr metrics (cvr, cpc) - data}
+# note: 'state_performance' df already has all the kpis we need
+# we can just use it to find the top/bottom for cvr and cpc
+
+# find top 5 states by conversion rate (best audience quality)
+top_states_cvr <- state_performance |>
+  filter(total_clicks > 700) |> # filter for states with a stable click base, 25th-100th percentile
+  arrange(desc(state_conv_rate)) |>
+  head(10)
+
+# find bottom 5 states by conversion rate (worst audience quality)
+bottom_states_cvr <- state_performance |>
+  filter(total_clicks > 700) |> # 25th-100th percentile
+  arrange(state_conv_rate) |>
+  head(10)
+
+# find top 5 states by cpc (most expensive traffic)
+top_states_cpc <- state_performance |> # <-- now using state_performance
+  filter(total_clicks > 700) |> # 25th-100th percentile
+  arrange(desc(avg_cpc)) |> # <-- using the new avg_cpc column
+  head(10)
+  
+# find bottom 5 states by cpc (cheapest traffic)
+bottom_states_cpc <- state_performance |> # <-- now using state_performance
+  filter(total_clicks > 700) |> # 25th-100th percentile
+  arrange(avg_cpc) |> # <-- using the new avg_cpc column
+  head(10)
+```
+
+```{r analyze state performance - dr metrics (cvr, cpc) - kable, results='asis'}
+# --- top 5 states by conversion rate (best quality) ---
+cat("### top 10 states by conversion rate (best audience quality, >700 clicks)\n")
+top_states_cvr |>
+  select(state, state_conv_rate, total_conversions, total_clicks) |>
+  mutate(
+    state_conv_rate = scales::percent(state_conv_rate, accuracy = 0.01),
+    total_conversions = scales::comma(total_conversions, accuracy = 1),
+    total_clicks = scales::comma(total_clicks, accuracy = 1)
+  ) |>
+  kable(format = "html", col.names = c("state", "avg. conversion rate", "total conversions", "total clicks")) |>
+  print()
+  
+# --- bottom 5 states by conversion rate (worst quality) ---
+cat("### bottom 10 states by conversion rate (worst audience quality, >700 clicks)\n")
+bottom_states_cvr |>
+  select(state, state_conv_rate, total_conversions, total_clicks) |>
+  mutate(
+    state_conv_rate = scales::percent(state_conv_rate, accuracy = 0.01),
+    total_conversions = scales::comma(total_conversions, accuracy = 1),
+    total_clicks = scales::comma(total_clicks, accuracy = 1)
+  ) |>
+  kable(format = "html", col.names = c("state", "avg. conversion rate", "total conversions", "total clicks")) |>
+  print()
+
+# --- top 10 states by cpc (cheapest traffic) ---
+cat("### top 10 states by cpc (cheapest traffic, >700 clicks)\n")
+bottom_states_cpc |>
+  select(state, avg_cpc, total_clicks) |>
+  mutate(
+    avg_cpc = scales::dollar(avg_cpc, accuracy = 0.01),
+    total_clicks = scales::comma(total_clicks, accuracy = 1)
+  ) |>
+  kable(format = "html", col.names = c("state", "avg. cpc", "total clicks")) |>
+  print()
+
+# --- bottom 10 states by cpc (most expensive traffic) ---
+cat("### bottom 10 states by cpc (most expensive traffic, >700 clicks)\n")
+top_states_cpc |>
+  select(state, avg_cpc, total_clicks) |>
+  mutate(
+    avg_cpc = scales::dollar(avg_cpc, accuracy = 0.01),
+    total_clicks = scales::comma(total_clicks, accuracy = 1)
+  ) |>
+  kable(format = "html", col.names = c("state", "avg. cpc", "total clicks")) |>
+  print()
+
+
+```
+
+## Identifying Branding Metrics (Avg CTR/Viewability/vCPM) Per State
+
+```{r analyze state performance - branding metrics - create new table}
+# aggregate branding kpis by state
+state_branding_performance <- dat_kpis |>
+  group_by(state) |>
+  summarise(
+    total_impressions = sum(impressions),
+    total_clicks = sum(clicks),
+    total_measurable_impressions = sum(measurable_impressions),
+    total_viewable_impressions = sum(viewable_impressions),
+    total_gross_cost = sum(gross_cost),
+    
+    # calculate overall ctr
+    avg_ctr = ifelse(total_impressions > 0, total_clicks / total_impressions, 0),
+    
+    # calculate overall viewability rate
+    avg_view_rate = ifelse(total_measurable_impressions > 0, total_viewable_impressions / total_measurable_impressions, 0),
+    
+    # calculate overall vcpm (cost per thousand viewable impressions)
+    avg_vcpm = ifelse(total_viewable_impressions > 0, (total_gross_cost / total_viewable_impressions) * 1000, na_real_),
+    .groups = 'drop'
+  )
+```
+
+```{r analyze state performance - branding metrics - data summary check}
+# use skim() for summary
+state_branding_performance |> 
+  select(total_impressions, total_measurable_impressions, total_viewable_impressions, total_clicks, total_gross_cost) |>
+  skim()
+```
+
+```{r analyze state performance - branding metrics - filter data}
+# OK, NOTE: I'm bottoming out data from the 25th-100th percentile, i don't want to throw out everything below the median point (regardless of what gemini says)
+# code refactor: don't use magic numbers, make it an actual variable to call later
+
+# first, calculate the 25th percentile (q1) for our *state level* stability metrics
+q1_impressions_state <- quantile(state_branding_performance$total_impressions, 0.25)
+q1_measurable_state <- quantile(state_branding_performance$total_measurable_impressions, 0.25)
+q1_viewable_state <- quantile(state_branding_performance$total_viewable_impressions, 0.25)
+
+# top 10 states by ctr
+top_states_ctr <- state_branding_performance |>
+  filter(total_impressions > q1_impressions_state) |> # filter for stable impression base, 25th-100th percentile
+  arrange(desc(avg_ctr)) |>
+  head(10)
+  
+# top 10 states by viewability rate
+top_states_viewability <- state_branding_performance |>
+  filter(total_measurable_impressions > q1_measurable_state) |> # filter by 25th-100th percentile for stability
+  arrange(desc(avg_view_rate)) |>
+  head(10)
+
+# top 10 states by vcpm (cheapest viewable impressions)
+top_states_vcpm <- state_branding_performance |>
+  filter(total_viewable_impressions > q1_viewable_state) |> # filter by 25th-100th percentile for stability
+  arrange(avg_vcpm) |>
+  head(10)
+```
+
+```{r analyze state performance - branding metrics - kable, results='asis'}
+# --- top 5 states by ctr ---
+cat("### top 10 states by click-through rate (ctr, >~246k impressions)\n")
+top_states_ctr |>
+  select(state, avg_ctr, total_clicks, total_impressions) |>
+  mutate(
+    avg_ctr = scales::percent(avg_ctr, accuracy = 0.01),
+    total_clicks = scales::comma(total_clicks, accuracy = 1),
+    total_impressions = scales::comma(total_impressions, accuracy = 1)
+  ) |>
+  kable(format = "html", col.names = c("state", "avg. ctr", "total clicks", "total impressions"))
+
+cat("\n\n")
+
+# --- top 5 states by viewability rate ---
+cat("### top 10 states by viewability rate (>~199k measurable impressions)\n")
+top_states_viewability |>
+  select(state, avg_view_rate, total_viewable_impressions, total_measurable_impressions) |>
+  mutate(
+    avg_view_rate = scales::percent(avg_view_rate, accuracy = 0.01),
+    total_viewable_impressions = scales::comma(total_viewable_impressions, accuracy = 1),
+    total_measurable_impressions = scales::comma(total_measurable_impressions, accuracy = 1)
+  ) |>
+  kable(format = "html", col.names = c("state", "avg. view rate", "viewable impressions", "measurable impressions"))
+
+cat("\n\n")
+
+# --- top 5 states by vcpm (cheapest viewable impressions) ---
+cat("### top 10 states by cost-effectiveness (lowest vcpm, >~111k viewable impressions)\n")
+top_states_vcpm |>
+  select(state, avg_vcpm, total_viewable_impressions, total_gross_cost) |>
+  mutate(
+    avg_vcpm = scales::dollar(avg_vcpm, accuracy = 0.01),
+    total_viewable_impressions = scales::comma(total_viewable_impressions, accuracy = 1),
+    total_gross_cost = scales::dollar(total_gross_cost, accuracy = 0.01)
+  ) |>
+  kable(format = "html", col.names = c("state", "avg. vcpm", "viewable impressions", "total cost"))
+```
+
+## *Observations for "Identify which states were the most cost effective"*
+
+I'll break this up into three sections: will look at CPA/Conversions first, then direct response performance metrics such as CVR/CPC per state, then look at them both in tandem and make suggestions/ideas from there
+
+### Scale (Volume Analysis/Total Conversions)
+
+-   to start: in terms of sanity checks/conversion floors: I filtered out data so we'd only consider states whose conversions were greater than or equal to five, just so we get rid of potential outliers on the low end
+
+-   In terms of purely total conversions, we see, of course, **Illinois, Florida, New York, and California** in terms of pure Total Conversions, with all of these over 1,000 pure conversions.
+
+    -   Tennessee is next at 807, everything else under that doesn't even surpass 500 conversions
+
+-   In terms of the lowest number of conversions: **Louisiana, Arkansas, Kentucky, Ohio,** and **South Carolina** didn't even break 30 conversions
+
+    -   Something interesting that should be mentioned: the number of total impressions for **Louisiana/Ohio/South Carolina** are alright, even if the number of total conversions is very low
+
+### Cost-Effectiveness (CPA Analysis)
+
+-   The most efficient/cheapest states for cost per action are **Indiana, Kentucky,** and **Ohio**
+
+-   The least efficient/most expensive states for cost per action are **South Carolina, Alabama,** and **Michigan**
+
+-   In terms of looking at things by CPA, **Illinois** and **New York** are in the top ten for lowest CPA as well, which is great considering that, respectively, each state is ranked **one** and **two** for states by total conversions, and **fifth** and **fourth** for lowest CPA ratings.
+
+    -   California is also interesting: ranked **4th** for most number of total conversions, and **9th** for most cost-effectiveness
+
+-   In terms of **really bad performing states** (**bad cpa, not many conversions**), **South Carolina, Alabama,** and **Arkansas** did bad across the board.
+
+### Direct Response (Conversion Rate and CPC Analysis)
+
+-   Purely by **conversion rate**, **Indiana, Georgia,** and **Tennessee** did great.
+
+-   **South Carolina, California,** and **Ohio** performed poorly, purely by **conversion rate.**
+
+-   Purely by **CPC, Ohio**, **California,** and **Illinois** did great.
+
+-   **Georgia, Michigan,** and **Tennessee** performed poorly, purely by **CPC.**
+
+-   If we take a deeper dive, however, we see that in terms of **Conversion Rate**, **Tennessee**, **Florida**, **New York**, and **Illinois** are balanced in terms of conversion rate vs. total number of clicks.
+
+-   When we factor **CPC** in, we can see that **California, Illinois, and New York** are all great picks in terms of **average CPC** compared to the number of **total clicks** they bring in.
+
+### Branding Metrics (CTR, Viewability, vCPM Analysis)
+
+-   Purely by **click-through rate**, **Michigan, Florida,** and **New York** did great.
+
+    -   Again, though, we need to consider how **Florida, New York**, and **California** are "realistic" standouts because they have tons of total impressions
+
+-   Purely by **viewability rate**, **Ohio, Mississippi,** and **Tennessee** did great.
+
+    -   When considering viewable and measurable impressions, **Tennessee, California, Illinois,** and **Florida** are particular "realistic" standouts because they have a decent amount of measurable impressions
+
+-   Purely by **cost-effectiveness**, **Ohio, Illinois, and California** did great.
+
+    -   Again, when considering viewable impressions compared to total cost, although **Illinois**, **California,** and **New York** may seem to have large total costs, they also bring in a lot of impressions.
+
+## *So, what states work across the board?*
+
+-   im so tired
+
+-   there are four general categories
+
+-   **general all stars (great states!)**
+
+    -   **illinois, new york, florida, and tennessee** are all great
+
+    -   a lot of these states are the best of all worlds: they're all in the **top 5 for conversion volume** and **top 10** for **lowest cpa/cost-effectiveness**
+
+-   **efficient, and cheap (test and scale)**
+
+    -   **indiana** and **kentucky** have **high conversion rates** and **low cpc**, so they have good **audience quality** but scale wasn't amazing in terms of total impressions; **indiana** was high but not to the same extent as like **new york, illinois,** and **california**
+
+-   **interesting standouts?**
+
+    -   **ohio** and **california** have **low-ish** cpas: although **ohio** was **3rd lowest** for cpa, **california** was **9th lowest**
+
+    -   **their conversion rates** were also low, so the audience might be low-quality
+
+    -   **ohio** has cheap traffic, but audiences suck with **very bad conversion rates**, but **very low cpc**
+
+    -   **california** in particular has **high cpc** and **low conversion rates, but the volume is good**
+
+    -   so, find ways to optimize **california**
+
+-   **bad states**
+
+    -   south carolina, alabama, michigan, and **arkansas** perform badly across the board
+
+    -   **they have high cpa, high cpc,** and **low conversion rates**
+
+------------------------------------------------------------------------
+
+## (Actually) Exploring Additional Insights Beyond Location
+
+So, we need to take a step back and see what locations/areas worked well from the previous sections. For the sake of simplicity, I'll limit it to top 3-5/bottom 3-5.
+
+### In terms of the top 4 most cost-effective locations, we had:
+
+-   **Augusta, Georgia**
+
+-   **Ft. Wayne, Indiana**
+
+-   **Nashville, Tennessee**
+
+-   **Lafayette, Indiana**
+
+### In terms of the worst locations, purely by CPA, the bottom three were:
+
+-   **Savannah, Georgia**
+
+-   **Chattanooga, Tennessee**
+
+-   **Huntsville, Alabama**
+
+### When looking at performance aggregated by state:
+
+-   **Illinois, New York, Florida,** and **Tennessee** were all great
+
+-   **South Carolina, Alabama, Michigan,** and **Arkansas** all performed badly across the board.
+
+code time !
+
+```{r define manual lists of top/bottom areas}
+# --- 1. define your manual lists ---
+top_locations_list <- c("Augusta", "Ft. Wayne", "Nashville", "Lafayette")
+bottom_locations_list <- c("Savannah", "Chattanooga", "Huntsville")
+top_states_list <- c("Illinois", "New York", "Florida", "Tennessee")
+bottom_states_list <- c("South Carolina", "Alabama", "Michigan", "Arkansas")
+```
+
+```{r master-helper-functions}
+# this one chunk will hold all our helper functions for this section
+
+# --- 1. helper for cpa-based analysis (audiences, sites, etc.) ---
+find_top_5_by_group <- function(data, filter_col, filter_list, group_col) {
+  
+  # note: {{filter_col}} and {{group_col}} let us pass in column names
+  
+  data |>
+    filter({{filter_col}} %in% filter_list) |>
+    group_by({{group_col}}) |> # group by the new column
+    summarise(
+      total_conversions = sum(total_conversions),
+      total_gross_cost = sum(gross_cost),
+      avg_cpa = ifelse(total_conversions > 0, total_gross_cost / total_conversions, NA)
+    ) |>
+    filter(total_conversions >= 3) |> # your rule for reliable cpas
+    arrange(avg_cpa) |> # arrange by best cpa (lowest)
+    head(5) # get the top 5
+}
+
+# --- 2. kable formatter for cpa-based tables ---
+format_kable_table <- function(data, col_name = "Dimension") {
+  
+  # rename the first column to whatever we passed in
+  colnames(data)[1] <- "col_to_rename" 
+  
+  data |>
+    mutate(
+      total_conversions = comma(total_conversions, accuracy = 1),
+      total_gross_cost = dollar(total_gross_cost, accuracy = 0.01),
+      avg_cpa = dollar(avg_cpa, accuracy = 0.01)
+    ) |>
+    kable(col.names = c(col_name, "Total Conversions", "Total Cost", "Avg. CPA"))
+}
+
+
+# --- 3. helper for viewability analysis ---
+find_top_5_viewability <- function(data, filter_col, filter_list, group_col, order_by = "view_rate") {
+  
+  summary_data <- data |>
+    filter({{filter_col}} %in% filter_list) |>
+    group_by({{group_col}}) |>
+    summarise(
+      total_impressions = sum(impressions),
+      total_viewable_impressions = sum(viewable_impressions),
+      total_measurable_impressions = sum(measurable_impressions),
+      total_gross_cost = sum(gross_cost),
+      avg_view_rate = ifelse(total_measurable_impressions > 0, 
+                             total_viewable_impressions / total_measurable_impressions, 0),
+      avg_vcpm = ifelse(total_viewable_impressions > 0, 
+                        (total_gross_cost / total_viewable_impressions) * 1000, NA)
+    ) |>
+    filter(total_measurable_impressions >= 10000)
+
+  if (order_by == "view_rate") {
+    summary_data <- summary_data |> arrange(desc(avg_view_rate)) # higher is better
+  } else {
+    summary_data <- summary_data |> arrange(avg_vcpm) # lower is better
+  }
+  
+  summary_data |> head(5) # get the top 5
+}
+
+
+# --- 4. kable formatter for viewability tables ---
+format_kable_viewability_combined <- function(data, col_name = "Dimension") {
+  
+  colnames(data)[1] <- "col_to_rename"
+  
+  data |>
+    mutate(
+      total_measurable_impressions = comma(total_measurable_impressions, accuracy = 1),
+      total_viewable_impressions = comma(total_viewable_impressions, accuracy = 1),
+      total_gross_cost = dollar(total_gross_cost, accuracy = 0.01),
+      avg_view_rate = percent(avg_view_rate, accuracy = 0.01),
+      avg_vcpm = dollar(avg_vcpm, accuracy = 0.01)
+    ) |>
+    select(
+      col_to_rename,
+      `Measurable Imps` = total_measurable_impressions,
+      `Viewable Imps` = total_viewable_impressions,
+      `Total Cost` = total_gross_cost,
+      `Avg. View Rate` = avg_view_rate,
+      `Avg. vCPM` = avg_vcpm
+    ) |>
+    kable(col.names = c(col_name, "Measurable Imps", "Viewable Imps", "Total Cost", "Avg. View Rate", "Avg. vCPM"))
+}
+```
+
+## Top Audiences Per Top/Bottom Performing Locations
+
+```{r analyze-audiences-data}
+# run the analyses for audiences
+# we can use our main helper function, just group by audience_segment
+top_aud_in_top_locs <- find_top_5_by_group(dat_kpis, city_primary, top_locations_list, audience_segment)
+top_aud_in_bottom_locs <- find_top_5_by_group(dat_kpis, city_primary, bottom_locations_list, audience_segment)
+top_aud_in_top_states <- find_top_5_by_group(dat_kpis, state, top_states_list, audience_segment)
+top_aud_in_bottom_states <- find_top_5_by_group(dat_kpis, state, bottom_states_list, audience_segment)
+```
+
+```{r analyze-audiences-kable, results='asis'}
+# print audience tables
+cat("### Top 5 Audiences in Top Locations (Augusta, Ft. Wayne, Nashville, Lafayette)\n\n")
+format_kable_table(top_aud_in_top_locs, "Audience Segment")
+
+cat("\n\n### Top 5 Audiences in Bottom Locations (Savannah, Chattanooga, Huntsville)\n\n")
+format_kable_table(top_aud_in_bottom_locs, "Audience Segment")
+
+cat("\n\n### Top 5 Audiences in Top States (Illinois, New York, Florida, Tennessee)\n\n")
+format_kable_table(top_aud_in_top_states, "Audience Segment")
+
+cat("\n\n### Top 5 Audiences in Bottom States (South Carolina, Alabama, Michigan, Arkansas)\n\n")
+format_kable_table(top_aud_in_bottom_states, "Audience Segment")
+```
+
+## Top Websites/URLs Per Top/Bottom Performing Locations
+
+```{r analyze-websites-data}
+# run the analyses for websites (app_url)
+top_sites_in_top_locs <- find_top_5_by_group(dat_kpis, city_primary, top_locations_list, app_url)
+top_sites_in_bottom_locs <- find_top_5_by_group(dat_kpis, city_primary, bottom_locations_list, app_url)
+top_sites_in_top_states <- find_top_5_by_group(dat_kpis, state, top_states_list, app_url)
+top_sites_in_bottom_states <- find_top_5_by_group(dat_kpis, state, bottom_states_list, app_url)
+```
+
+```{r analyze-websites-kable, results='asis'}
+# print website tables
+cat("### Top 5 Websites in Top Locations (Augusta, Ft. Wayne, Nashville, Lafayette)\n\n")
+format_kable_table(top_sites_in_top_locs, "Website (app_url)")
+
+cat("\n\n### Top 5 Websites in Bottom Locations (Savannah, Chattanooga, Huntsville)\n\n")
+format_kable_table(top_sites_in_bottom_locs, "Website (app_url)")
+
+cat("\n\n### Top 5 Websites in Top States (Illinois, New York, Florida, Tennessee)\n\n")
+format_kable_table(top_sites_in_top_states, "Website (app_url)")
+
+cat("\n\n### Top 5 Websites in Bottom States (South Carolina, Alabama, Michigan, Arkansas)\n\n")
+format_kable_table(top_sites_in_bottom_states, "Website (app_url)")
+```
+
+## Top Exchanges Per Top/Bottom Performing Locations
+
+```{r analyze-exchanges-data}
+# run the analyses for exchanges
+top_exch_in_top_locs <- find_top_5_by_group(dat_kpis, city_primary, top_locations_list, exchange)
+top_exch_in_bottom_locs <- find_top_5_by_group(dat_kpis, city_primary, bottom_locations_list, exchange)
+top_exch_in_top_states <- find_top_5_by_group(dat_kpis, state, top_states_list, exchange)
+top_exch_in_bottom_states <- find_top_5_by_group(dat_kpis, state, bottom_states_list, exchange)
+```
+
+```{r analyze-exchanges-kable, results='asis'}
+# print exchange tables
+cat("### Top 5 Exchanges in Top Locations (Augusta, Ft. Wayne, Nashville, Lafayette)\n\n")
+format_kable_table(top_exch_in_top_locs, "Exchange")
+
+cat("\n\n### Top 5 Exchanges in Bottom Locations (Savannah, Chattanooga, Huntsville)\n\n")
+format_kable_table(top_exch_in_bottom_locs, "Exchange")
+
+cat("\n\n### Top 5 Exchanges in Top States (Illinois, New York, Florida, Tennessee)\n\n")
+format_kable_table(top_exch_in_top_states, "Exchange")
+
+cat("\n\n### Top 5 Exchanges in Bottom States (South Carolina, Alabama, Michigan, Arkansas)\n\n")
+format_kable_table(top_exch_in_bottom_states, "Exchange")
+```
+
+## Top Devices Per Top/Bottom Performing Locations
+
+```{r analyze-devices-data}
+# run the analyses for devices
+top_dev_in_top_locs <- find_top_5_by_group(dat_kpis, city_primary, top_locations_list, device_make)
+top_dev_in_bottom_locs <- find_top_5_by_group(dat_kpis, city_primary, bottom_locations_list, device_make)
+top_dev_in_top_states <- find_top_5_by_group(dat_kpis, state, top_states_list, device_make)
+top_dev_in_bottom_states <- find_top_5_by_group(dat_kpis, state, bottom_states_list, device_make)
+```
+
+```{r analyze-devices-kable, results='asis'}
+# print device tables
+cat("### Top Devices in Top Locations (Augusta, Ft. Wayne, Nashville, Lafayette)\n\n")
+format_kable_table(top_dev_in_top_locs, "Device Make")
+
+cat("\n\n### Top Device in Bottom Locations (Savannah, Chattanooga, Huntsville)\n\n")
+format_kable_table(top_dev_in_bottom_locs, "Device Make")
+
+cat("\n\n### Top Devices in Top States (Illinois, New York, Florida, Tennessee)\n\n")
+format_kable_table(top_dev_in_top_states, "Device Make")
+
+cat("\n\n### Top Devices in Bottom States (South Carolina, Alabama, Michigan, Arkansas)\n\n")
+format_kable_table(top_dev_in_bottom_states, "Device Make")
+```
+
+## Top Creatives Per Top/Bottom Performing Locations
+
+```{r analyze-creatives-data}
+# first, create a new dataframe with a combined creative column
+dat_kpis_creative <- dat_kpis |>
+  mutate(
+    creative_combo = paste(creative_size, creative_messaging, sep = " | ")
+  )
+
+# run the analyses for creatives using the new combo column
+top_creat_in_top_locs <- find_top_5_by_group(dat_kpis_creative, city_primary, top_locations_list, creative_combo)
+top_creat_in_bottom_locs <- find_top_5_by_group(dat_kpis_creative, city_primary, bottom_locations_list, creative_combo)
+top_creat_in_top_states <- find_top_5_by_group(dat_kpis_creative, state, top_states_list, creative_combo)
+top_creat_in_bottom_states <- find_top_5_by_group(dat_kpis_creative, state, bottom_states_list, creative_combo)
+```
+
+```{r analyze-creatives-kable, results='asis'}
+# print creative tables
+cat("### Top 5 Creatives in Top Locations (Augusta, Ft. Wayne, Nashville, Lafayette)\n\n")
+format_kable_table(top_creat_in_top_locs, "Creative (Size | Message)")
+
+cat("\n\n### Top 5 Creatives in Bottom Locations (Savannah, Chattanooga, Huntsville)\n\n")
+format_kable_table(top_creat_in_bottom_locs, "Creative (Size | Message)")
+
+cat("\n\n### Top 5 Creatives in Top States (Illinois, New York, Florida, Tennessee)\n\n")
+format_kable_table(top_creat_in_top_states, "Creative (Size | Message)")
+
+cat("\n\n### Top 5 Creatives in Bottom States (South Carolina, Alabama, Michigan, Arkansas)\n\n")
+format_kable_table(top_creat_in_bottom_states, "Creative (Size | Message)")
+```
+
+## Top Viewability Per Top/Bottom Performing Locations
+
+```{r analyze-viewability-data}
+# run analysis for top view rate (higher is better)
+vr_sites_in_top_locs <- find_top_5_viewability(dat_kpis, city_primary, top_locations_list, app_url, "view_rate")
+vr_sites_in_bottom_locs <- find_top_5_viewability(dat_kpis, city_primary, bottom_locations_list, app_url, "view_rate")
+vr_sites_in_top_states <- find_top_5_viewability(dat_kpis, state, top_states_list, app_url, "view_rate")
+vr_sites_in_bottom_states <- find_top_5_viewability(dat_kpis, state, bottom_states_list, app_url, "view_rate")
+
+# run analysis for top vcpm (lower is better)
+vcpm_sites_in_top_locs <- find_top_5_viewability(dat_kpis, city_primary, top_locations_list, app_url, "vcpm")
+vcpm_sites_in_bottom_locs <- find_top_5_viewability(dat_kpis, city_primary, bottom_locations_list, app_url, "vcpm")
+vcpm_sites_in_top_states <- find_top_5_viewability(dat_kpis, state, top_states_list, app_url, "vcpm")
+vcpm_sites_in_bottom_states <- find_top_5_viewability(dat_kpis, state, bottom_states_list, app_url, "vcpm")
+```
+
+```{r analyze-viewability-kable, results='asis'}
+# this section will have two tables per header, both with all columns
+
+# top locations
+cat("### Top Viewability in Top Locations (Augusta, Ft. Wayne, Nashville, Lafayette)\n\n")
+cat("by highest *View Rate* (most seen)\n")
+format_kable_viewability_combined(vr_sites_in_top_locs, "Website (app_url)")
+
+cat("\n\nby lowest *vCPM* (most cost-effective)\n")
+format_kable_viewability_combined(vcpm_sites_in_top_locs, "Website (app_url)")
+
+
+# bottom locations
+cat("\n\n### Top Viewability in Bottom Locations (Savannah, Chattanooga, Huntsville)\n\n")
+cat("by highest *View Rate* (most seen)\n")
+format_kable_viewability_combined(vr_sites_in_bottom_locs, "Website (app_url)")
+
+cat("\n\nby lowest *vCPM* (most cost-effective)\n")
+format_kable_viewability_combined(vcpm_sites_in_bottom_locs, "Website (app_url)")
+
+
+# top states
+cat("\n\n### Top Viewability in Top States (Illinois, New York, Florida, Tennessee)\n\n")
+cat("by highest *View Rate* (most seen)\n")
+format_kable_viewability_combined(vr_sites_in_top_states, "Website (app_url)")
+
+cat("\n\nby lowest *vCPM* (most cost-effective)\n")
+format_kable_viewability_combined(vcpm_sites_in_top_states, "Website (app_url)")
+
+
+# bottom states
+cat("\n\n### Top Viewability in Bottom States (South Carolina, Alabama, Michigan, Arkansas)\n\n")
+cat("by highest *View Rate* (most seen)\n")
+format_kable_viewability_combined(vr_sites_in_bottom_states, "Website (app_url)")
+
+cat("\n\nby lowest *vCPM* (most cost-effective)\n")
+format_kable_viewability_combined(vcpm_sites_in_bottom_states, "Website (app_url)")
+```
+
+```{r location_kpis to xlsx and csv}
+# location_all_kpis |> 
+#   write_xlsx("data/location_all_kpis.xlsx")
+# 
+# location_all_kpis |> 
+#   write_csv("data/location_all_kpis.csv")
+```
+
+# FINAL STUFF FOR THE PRESENTATION/SLIDES
+```{r location-kpi-summary-table-refined, results='asis'}
+# This table shows the key performance metrics for the top 15 locations by CVR
+# We focus on Volume (Conversions/Clicks) and Efficiency (CPA) to give context to the high CVR.
+
+cat("### Top 15 Locations by Conversion Rate (with Volume & CPA)\n")
+
+location_all_kpis |>
+  # Select the columns in the specific order you requested
+  select(city_primary, state, avg_conv_rate, total_conversions, total_clicks, avg_cpa) |>
+  arrange(desc(avg_conv_rate)) |> # Sort by CVR descending
+  head(15) |> # Keep only the top 15
+  mutate(
+    # Format percentages
+    avg_conv_rate = scales::percent(avg_conv_rate, accuracy = 0.01),
+    # Format raw numbers with commas so they are readable
+    total_conversions = scales::comma(total_conversions, accuracy = 1),
+    total_clicks = scales::comma(total_clicks, accuracy = 1),
+    # Format cost as currency
+    avg_cpa = scales::dollar(avg_cpa, accuracy = 0.01)
+  ) |>
+  kable(
+    format = "html", 
+    # Rename headers for the final presentation
+    col.names = c("City", "State", "Conversion Rate (CVR)", "Total Conversions", "Total Clicks", "Avg. CPA")
+  )
+```
+
+```{r look at chicago and LA}
+# location_all_kpis |> 
+#   filter(city_primary %in% c("Chicago", "Los Angeles"))
+```
+
+```{r find summary of average cvr}
+summary(state_performance$state_conv_rate)
+
+quantile(state_performance$state_conv_rate, probs = c(0.8, 0.85, 0.9, 0.95))
+```
+
+
+

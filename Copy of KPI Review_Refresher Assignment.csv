@@ -1,0 +1,10 @@
+KPI,Definition,Formula,Example,,# or $ or %,Good,Bad
+Cost,Cost of an ad,N/A,"A Nike instagram ad that ran all throughout the month of May costed $4,000.",,$,N/A,N/A
+Clicks,How many folks are click on your ad,N/A,"If I click on an Instagram ad, this counts as a click",,#,N/A,N/A
+Impression,How many folks are viewing your ad,N/A,"If I saw an Instagram ad, this counts as an impression",,#,N/A,N/A
+CTR,Click-through-rate (The ratio between Clicks to Impressions),CTR=Clicks/Impressions,"If there are 2 clicks in an ad that generated 10 impressions, the CTR would be 20%.",,%,High,Low
+CPC,Cost per click (The ratio between how much the ad cost and how many clicks it generated),CPC=Cost/Clicks,"A Nike instagram ad that ran all throughout the month of May costed $4,000 and had 400 clicks. The CPC (Cost per click) was $10. ",,$,Low,High
+Conversions,"Conversions are actions. Actions can be sales, email sign ups, applications, and etc.",N/A,"If I saw an Instagram ad, and clicked on the ad, and bought something from their website, this would count as a conversion.",,#,Low,High
+CVR,Conversion per click. (The ratio between how many conversions (actions) are to clicks.,CVR=Conversion (Action)/Clicks,"A Nike Instagram ad resulted in 100 clicks, and out of the 10 clicks, there were 10 conversions/purchases, it had a CPA of $10.",,%,High,Low
+CPA,Cost per action. (The ratio between how many conversions (actions) ,CPA=Cost/Conversions (Actions),"A Nike Instagram ad cost $100 in the end of the campaign, it had $5 sales resulting from the ad, the CPA is $20. It cost $20 to have someone make a conversion.",,$,Low,High
+ROI,Return on Investment (The ratio between revenue generated to cost),ROI=Revenue/Cost,"A Nike Instagram ad made $100 in revenue, the cost of the ad was $10, it has a ROI of $10.",,$,High,Low

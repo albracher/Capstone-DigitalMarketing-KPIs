@@ -1,0 +1,2525 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>capstone data analysis - creative</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="coop_capstone_eda_creative_files/libs/clipboard/clipboard.min.js"></script>
+<script src="coop_capstone_eda_creative_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="coop_capstone_eda_creative_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="coop_capstone_eda_creative_files/libs/quarto-html/popper.min.js"></script>
+<script src="coop_capstone_eda_creative_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="coop_capstone_eda_creative_files/libs/quarto-html/anchor.min.js"></script>
+<link href="coop_capstone_eda_creative_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="coop_capstone_eda_creative_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="coop_capstone_eda_creative_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="coop_capstone_eda_creative_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="coop_capstone_eda_creative_files/libs/bootstrap/bootstrap-bb462d781dde1847d9e3ccf7736099dd.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">capstone data analysis - creative</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="run-data-cleaning-qmd-first-pls" class="level3">
+<h3 class="anchored" data-anchor-id="run-data-cleaning-qmd-first-pls">RUN DATA CLEANING QMD FIRST PLS</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning =</span> <span class="cn">FALSE</span>, <span class="at">message =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.1     ✔ stringr   1.5.2
+✔ ggplot2   4.0.0     ✔ tibble    3.3.0
+✔ lubridate 1.9.4     ✔ tidyr     1.3.1
+✔ purrr     1.1.0     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'janitor'
+
+The following objects are masked from 'package:stats':
+
+    chisq.test, fisher.test</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(skimr)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tinytex)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(writexl)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pillar)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'pillar'
+
+The following object is masked from 'package:dplyr':
+
+    dim_desc</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(scales)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'scales'
+
+The following object is masked from 'package:purrr':
+
+    discard
+
+The following object is masked from 'package:readr':
+
+    col_factor</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DT)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>dat_kpis <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/dat_kpis.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 727 Columns: 24
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (11): location, city, state, city_primary, audience_segment, creative_si...
+dbl (13): impressions, clicks, viewable_impressions, measurable_impressions,...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># tl;dr show more data on one screen</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># increase the number of columns printed on screen</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">pillar.width =</span> <span class="cn">Inf</span>) <span class="co"># try to use full width of document</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">pillar.max_footer_lines =</span> <span class="dv">3</span>) <span class="co"># allows more lines in the footer if columns are truncated</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="data-glossary" class="level2">
+<h2 class="anchored" data-anchor-id="data-glossary">Data Glossary</h2>
+<p>Here’s an explanation of each column in the final <code>dat_kpis</code> dataset:</p>
+<section id="original-cleaned-location-columns" class="level3">
+<h3 class="anchored" data-anchor-id="original-cleaned-location-columns">Original &amp; Cleaned Location Columns</h3>
+<ul>
+<li><strong><code>location</code></strong>: The original, raw location string as it appeared in the input data (e.g., “Orlando-Daytona Beach, Florida”, “Mobile, Alabama-Pensacola, Florida”).</li>
+<li><strong><code>city</code></strong>: The city part extracted directly after splitting the location string by the first comma. This might contain multiple city names or DMA names (e.g., “Orlando-Daytona Beach”, “Champaign &amp; Springfield-Decatur”).</li>
+<li><strong><code>state</code></strong>: The cleaned and standardized state name, corrected for cross-state DMA entries (e.g., “Florida”, “Alabama”, “Tennessee”).</li>
+<li><strong><code>city_primary</code></strong>: The single, primary city name extracted from the <code>city</code> column, intended for geocoding and mapping (e.g., “Orlando”, “Champaign”, “Mobile”, “Los Angeles”).</li>
+<li><strong><code>state_raw</code></strong>: A temporary column holding the state information immediately after the initial separate split, before manual corrections were applied (e.g., “Florida”, “Alabama-Pensacola, Florida”).</li>
+</ul>
+</section>
+<section id="ad-details-targeting-columns" class="level3">
+<h3 class="anchored" data-anchor-id="ad-details-targeting-columns">Ad Details &amp; Targeting Columns</h3>
+<ul>
+<li><strong><code>audience_segment</code></strong>: Describes the target audience characteristics or online behavior used for showing the ad (e.g., “Online Behavior&gt;United States&gt;Finance&gt;Financial Planning…”).</li>
+<li><strong><code>creative_size</code></strong>: The dimensions of the ad creative in pixels (e.g., “300x250”, “320x50”).</li>
+<li><strong><code>creative_messaging</code></strong>: The marketing message or call to action used in the ad (e.g., “Subscribe Today - 10% Discount”, “Sign up Now - 10% Off”).</li>
+<li><strong><code>app_url</code></strong>: The specific website or app where the ad impression occurred (e.g., “accuweather.com”, “cnn.com”).</li>
+<li><strong><code>exchange</code></strong>: The advertising technology platform that facilitated the ad serving (e.g., “Google Ad Manager”, “PubMatic”).</li>
+<li><strong><code>device_make</code></strong>: The type of device on which the ad was displayed (e.g., “Smartphone”, “Apple PC”, “Windows PC”).</li>
+</ul>
+</section>
+<section id="core-performance-metrics" class="level3">
+<h3 class="anchored" data-anchor-id="core-performance-metrics">Core Performance Metrics</h3>
+<ul>
+<li><strong><code>impressions</code></strong>: The total number of times the ad was displayed.</li>
+<li><strong><code>clicks</code></strong>: The total number of times the ad was clicked.</li>
+<li><strong><code>viewable_impressions</code></strong>: The number of impressions where the ad met industry standards for actually being considered viewable by a user.</li>
+<li><strong><code>measurable_impressions</code></strong>: The number of impressions for which viewability could be technically measured.</li>
+<li><strong><code>total_conversions</code></strong>: The number of times a desired action (like a sign-up or purchase) was completed after a user clicked the ad.</li>
+<li><strong><code>gross_cost</code></strong>: The total amount spent for the ad impressions/clicks listed in that row.</li>
+</ul>
+</section>
+<section id="calculated-kpis" class="level3">
+<h3 class="anchored" data-anchor-id="calculated-kpis">Calculated KPIs</h3>
+<ul>
+<li><strong><code>ctr</code> (Click-Through Rate)</strong>: <span class="math inline">\((\frac{\text{clicks}}{\text{impressions}})\)</span>. Shows the percentage of impressions that led to a click.</li>
+<li><strong><code>conv_rate</code> (Conversion Rate)</strong>: <span class="math inline">\((\frac{\text{total\_conversions}}{\text{clicks}})\)</span>. Shows the percentage of clicks that led to a conversion.</li>
+<li><strong><code>cpa</code> (Cost Per Acquisition)</strong>: <span class="math inline">\((\frac{\text{gross\_cost}}{\text{total\_conversions}})\)</span>. The average cost to acquire one conversion. (<span class="math inline">\(\text{NA}\)</span> if conversions <span class="math inline">\(\text{= 0}\)</span>).</li>
+<li><strong><code>cpc</code> (Cost Per Click)</strong>: <span class="math inline">\((\frac{\text{gross\_cost}}{\text{clicks}})\)</span>. The average cost for each click. (<span class="math inline">\(\text{NA}\)</span> if clicks <span class="math inline">\(\text{= 0}\)</span>).</li>
+<li><strong><code>ecpm</code> (Effective Cost Per Mille/Thousand)</strong>: <span class="math inline">\((\frac{\text{gross\_cost}}{\text{impressions}}) \times 1000\)</span>. The cost for one thousand impressions.</li>
+<li><strong><code>view_rate</code> (Viewability Rate)</strong>: <span class="math inline">\((\frac{\text{viewable\_impressions}}{\text{measurable\_impressions}})\)</span>. The percentage of measurable impressions that were actually viewable.</li>
+<li><strong><code>vcpm</code> (Viewable Cost Per Mille/Thousand)</strong>: <span class="math inline">\((\frac{\text{gross\_cost}}{\text{viewable\_impressions}}) \times 1000\)</span>. The cost for one thousand viewable impressions. (<span class="math inline">\(\text{NA}\)</span> if viewable_impressions <span class="math inline">\(\text{= 0}\)</span>).</li>
+</ul>
+</section>
+</section>
+<section id="accidentally-did-creative-analyst-stuff-work-is-here" class="level1">
+<h1>accidentally did creative analyst stuff! work is here</h1>
+</section>
+<section id="creative-analyst-stuffexploring-additional-insights-beyond-location" class="level1">
+<h1>Creative Analyst Stuff/Exploring Additional Insights Beyond Location</h1>
+<section id="analyze-performance-by-appwebsite-where-ad-appeared" class="level2">
+<h2 class="anchored" data-anchor-id="analyze-performance-by-appwebsite-where-ad-appeared">Analyze performance by app/website where ad appeared</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dat_kpis <span class="sc">|&gt;</span> </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(impressions) <span class="sc">|&gt;</span> </span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">skim</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Name</td>
+<td style="text-align: left;">select(dat_kpis, impressi…</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Number of rows</td>
+<td style="text-align: left;">727</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Number of columns</td>
+<td style="text-align: left;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">_______________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Column type frequency:</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">________________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Group variables</td>
+<td style="text-align: left;">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 10%">
+<col style="width: 15%">
+<col style="width: 7%">
+<col style="width: 9%">
+<col style="width: 5%">
+<col style="width: 8%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 8%">
+<col style="width: 6%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">p0</th>
+<th style="text-align: right;">p25</th>
+<th style="text-align: right;">p50</th>
+<th style="text-align: right;">p75</th>
+<th style="text-align: right;">p100</th>
+<th style="text-align: left;">hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">impressions</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">117889</td>
+<td style="text-align: right;">298271.8</td>
+<td style="text-align: right;">7229</td>
+<td style="text-align: right;">14024.5</td>
+<td style="text-align: right;">29834</td>
+<td style="text-align: right;">88396</td>
+<td style="text-align: right;">4154911</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># analyze performance by the website/app where the ad appeared</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># performance per app/url</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>app_performance <span class="ot">&lt;-</span> dat_kpis <span class="sc">|&gt;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(app_url) <span class="sc">|&gt;</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_impressions =</span> <span class="fu">sum</span>(impressions),</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_clicks =</span> <span class="fu">sum</span>(clicks),</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_conversions =</span> <span class="fu">sum</span>(total_conversions),</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_gross_cost =</span> <span class="fu">sum</span>(gross_cost),</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_cpa =</span> <span class="fu">ifelse</span>(total_conversions <span class="sc">&gt;</span> <span class="dv">0</span>, total_gross_cost <span class="sc">/</span> total_conversions, na_real_),</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_ctr =</span> <span class="fu">ifelse</span>(total_impressions <span class="sc">&gt;</span> <span class="dv">0</span>, total_clicks <span class="sc">/</span> total_impressions, <span class="dv">0</span>),</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">'drop'</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># focus on sites with a decent number of impressions to make stats more stable</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(total_impressions <span class="sc">&gt;</span> <span class="fl">14024.5</span>) <span class="sc">|&gt;</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># sort by cost-effectiveness (lowest cpa)</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(avg_cpa)</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="co"># performance per exchange</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>exchange_performance <span class="ot">&lt;-</span> dat_kpis <span class="sc">|&gt;</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(exchange) <span class="sc">|&gt;</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_impressions =</span> <span class="fu">sum</span>(impressions),</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_clicks =</span> <span class="fu">sum</span>(clicks),</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_conversions =</span> <span class="fu">sum</span>(total_conversions),</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_gross_cost =</span> <span class="fu">sum</span>(gross_cost),</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_cpa =</span> <span class="fu">ifelse</span>(total_conversions <span class="sc">&gt;</span> <span class="dv">0</span>, total_gross_cost <span class="sc">/</span> total_conversions, na_real_),</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_ctr =</span> <span class="fu">ifelse</span>(total_impressions <span class="sc">&gt;</span> <span class="dv">0</span>, total_clicks <span class="sc">/</span> total_impressions, <span class="dv">0</span>),</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">'drop'</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>  <span class="co"># sort by total conversions first, then by cpa</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(total_conversions), avg_cpa)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># store top/bottom apps</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>top_apps <span class="ot">&lt;-</span> <span class="fu">head</span>(app_performance, <span class="dv">15</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>bottom_apps <span class="ot">&lt;-</span> <span class="fu">tail</span>(app_performance, <span class="dv">15</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># helper function to format these tables</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>format_app_table <span class="ot">&lt;-</span> <span class="cf">function</span>(table_data) {</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  table_data <span class="sc">|&gt;</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">total_impressions =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total_impressions, <span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">total_clicks =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total_clicks, <span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">total_conversions =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total_conversions, <span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">total_gross_cost =</span> scales<span class="sc">::</span><span class="fu">dollar</span>(total_gross_cost, <span class="at">accuracy =</span> <span class="fl">0.01</span>),</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">avg_cpa =</span> scales<span class="sc">::</span><span class="fu">dollar</span>(avg_cpa, <span class="at">accuracy =</span> <span class="fl">0.01</span>),</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">avg_ctr =</span> scales<span class="sc">::</span><span class="fu">percent</span>(avg_ctr, <span class="at">accuracy =</span> <span class="fl">0.01</span>)</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kable</span>(<span class="at">format =</span> <span class="st">"html"</span>,</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>          <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"app/url"</span>, <span class="st">"total impressions"</span>, <span class="st">"total clicks"</span>, <span class="st">"total conversions"</span>, <span class="st">"total cost"</span>, <span class="st">"avg cpa"</span>, <span class="st">"avg ctr"</span>))</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="co"># helper function for exchange table</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>format_exchange_table <span class="ot">&lt;-</span> <span class="cf">function</span>(table_data) {</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>  table_data <span class="sc">|&gt;</span></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">total_impressions =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total_impressions, <span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">total_clicks =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total_clicks, <span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>      <span class="at">total_conversions =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total_conversions, <span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>      <span class="at">total_gross_cost =</span> scales<span class="sc">::</span><span class="fu">dollar</span>(total_gross_cost, <span class="at">accuracy =</span> <span class="fl">0.01</span>),</span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>      <span class="at">avg_cpa =</span> scales<span class="sc">::</span><span class="fu">dollar</span>(avg_cpa, <span class="at">accuracy =</span> <span class="fl">0.01</span>),</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>      <span class="at">avg_ctr =</span> scales<span class="sc">::</span><span class="fu">percent</span>(avg_ctr, <span class="at">accuracy =</span> <span class="fl">0.01</span>)</span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kable</span>(<span class="at">format =</span> <span class="st">"html"</span>,</span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>          <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"exchange"</span>, <span class="st">"total impressions"</span>, <span class="st">"total clicks"</span>, <span class="st">"total conversions"</span>, <span class="st">"total cost"</span>, <span class="st">"avg cpa"</span>, <span class="st">"avg ctr"</span>))</span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a><span class="co"># --- top 15 performing websites ---</span></span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"### Top 15 Performing Websites (by CPA, min ~14k impressions)</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="top-15-performing-websites-by-cpa-min-14k-impressions" class="level3">
+<h3 class="anchored" data-anchor-id="top-15-performing-websites-by-cpa-min-14k-impressions">Top 15 Performing Websites (by CPA, min ~14k impressions)</h3>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>top_apps <span class="sc">|&gt;</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">format_app_table</span>() <span class="sc">|&gt;</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+app/url
+</th>
+<th style="text-align:left;">
+total impressions
+</th>
+<th style="text-align:left;">
+total clicks
+</th>
+<th style="text-align:left;">
+total conversions
+</th>
+<th style="text-align:left;">
+total cost
+</th>
+<th style="text-align:left;">
+avg cpa
+</th>
+<th style="text-align:left;">
+avg ctr
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+factable.com
+</td>
+<td style="text-align:left;">
+31,243
+</td>
+<td style="text-align:left;">
+100
+</td>
+<td style="text-align:left;">
+21
+</td>
+<td style="text-align:left;">
+$1,452.59
+</td>
+<td style="text-align:left;">
+$69.17
+</td>
+<td style="text-align:left;">
+0.32%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+semana.com
+</td>
+<td style="text-align:left;">
+16,325
+</td>
+<td style="text-align:left;">
+78
+</td>
+<td style="text-align:left;">
+21
+</td>
+<td style="text-align:left;">
+$1,814.10
+</td>
+<td style="text-align:left;">
+$86.39
+</td>
+<td style="text-align:left;">
+0.48%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+taboolanews.com
+</td>
+<td style="text-align:left;">
+217,824
+</td>
+<td style="text-align:left;">
+560
+</td>
+<td style="text-align:left;">
+16
+</td>
+<td style="text-align:left;">
+$1,451.81
+</td>
+<td style="text-align:left;">
+$90.74
+</td>
+<td style="text-align:left;">
+0.26%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+aol.com
+</td>
+<td style="text-align:left;">
+39,157
+</td>
+<td style="text-align:left;">
+167
+</td>
+<td style="text-align:left;">
+101
+</td>
+<td style="text-align:left;">
+$10,895.02
+</td>
+<td style="text-align:left;">
+$107.87
+</td>
+<td style="text-align:left;">
+0.43%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+historyallday.com
+</td>
+<td style="text-align:left;">
+14,379
+</td>
+<td style="text-align:left;">
+30
+</td>
+<td style="text-align:left;">
+18
+</td>
+<td style="text-align:left;">
+$1,973.56
+</td>
+<td style="text-align:left;">
+$109.64
+</td>
+<td style="text-align:left;">
+0.21%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+dailydot.com
+</td>
+<td style="text-align:left;">
+29,393
+</td>
+<td style="text-align:left;">
+70
+</td>
+<td style="text-align:left;">
+19
+</td>
+<td style="text-align:left;">
+$2,120.76
+</td>
+<td style="text-align:left;">
+$111.62
+</td>
+<td style="text-align:left;">
+0.24%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+moneyppl.com
+</td>
+<td style="text-align:left;">
+37,076
+</td>
+<td style="text-align:left;">
+113
+</td>
+<td style="text-align:left;">
+12
+</td>
+<td style="text-align:left;">
+$1,488.00
+</td>
+<td style="text-align:left;">
+$124.00
+</td>
+<td style="text-align:left;">
+0.30%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mobileposse.com
+</td>
+<td style="text-align:left;">
+98,509
+</td>
+<td style="text-align:left;">
+299
+</td>
+<td style="text-align:left;">
+15
+</td>
+<td style="text-align:left;">
+$2,059.27
+</td>
+<td style="text-align:left;">
+$137.28
+</td>
+<td style="text-align:left;">
+0.30%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+uscellular.com
+</td>
+<td style="text-align:left;">
+17,561
+</td>
+<td style="text-align:left;">
+50
+</td>
+<td style="text-align:left;">
+10
+</td>
+<td style="text-align:left;">
+$1,519.90
+</td>
+<td style="text-align:left;">
+$151.99
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+soaps.sheknows.com
+</td>
+<td style="text-align:left;">
+20,572
+</td>
+<td style="text-align:left;">
+90
+</td>
+<td style="text-align:left;">
+10
+</td>
+<td style="text-align:left;">
+$1,529.31
+</td>
+<td style="text-align:left;">
+$152.93
+</td>
+<td style="text-align:left;">
+0.44%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+screenrant.com
+</td>
+<td style="text-align:left;">
+272,063
+</td>
+<td style="text-align:left;">
+856
+</td>
+<td style="text-align:left;">
+61
+</td>
+<td style="text-align:left;">
+$9,542.97
+</td>
+<td style="text-align:left;">
+$156.44
+</td>
+<td style="text-align:left;">
+0.31%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+investmentguru.com
+</td>
+<td style="text-align:left;">
+31,813
+</td>
+<td style="text-align:left;">
+84
+</td>
+<td style="text-align:left;">
+13
+</td>
+<td style="text-align:left;">
+$2,060.99
+</td>
+<td style="text-align:left;">
+$158.54
+</td>
+<td style="text-align:left;">
+0.26%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+the-sun.com
+</td>
+<td style="text-align:left;">
+782,037
+</td>
+<td style="text-align:left;">
+2,825
+</td>
+<td style="text-align:left;">
+156
+</td>
+<td style="text-align:left;">
+$25,035.34
+</td>
+<td style="text-align:left;">
+$160.48
+</td>
+<td style="text-align:left;">
+0.36%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+essentiallysports.com
+</td>
+<td style="text-align:left;">
+163,324
+</td>
+<td style="text-align:left;">
+398
+</td>
+<td style="text-align:left;">
+21
+</td>
+<td style="text-align:left;">
+$3,372.93
+</td>
+<td style="text-align:left;">
+$160.62
+</td>
+<td style="text-align:left;">
+0.24%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+greedyfinance.com
+</td>
+<td style="text-align:left;">
+20,537
+</td>
+<td style="text-align:left;">
+84
+</td>
+<td style="text-align:left;">
+10
+</td>
+<td style="text-align:left;">
+$1,609.88
+</td>
+<td style="text-align:left;">
+$160.99
+</td>
+<td style="text-align:left;">
+0.41%
+</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- bottom 15 performing websites ---</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"### Bottom 15 Performing Websites (by CPA, min ~14k impressions)</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="bottom-15-performing-websites-by-cpa-min-14k-impressions" class="level3">
+<h3 class="anchored" data-anchor-id="bottom-15-performing-websites-by-cpa-min-14k-impressions">Bottom 15 Performing Websites (by CPA, min ~14k impressions)</h3>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>bottom_apps <span class="sc">|&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># re-sort descending for this table to show worst-at-top</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(avg_cpa)) <span class="sc">|&gt;</span> </span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">format_app_table</span>() <span class="sc">|&gt;</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+app/url
+</th>
+<th style="text-align:left;">
+total impressions
+</th>
+<th style="text-align:left;">
+total clicks
+</th>
+<th style="text-align:left;">
+total conversions
+</th>
+<th style="text-align:left;">
+total cost
+</th>
+<th style="text-align:left;">
+avg cpa
+</th>
+<th style="text-align:left;">
+avg ctr
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+medical-news.org
+</td>
+<td style="text-align:left;">
+117,879
+</td>
+<td style="text-align:left;">
+390
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+$5,102.71
+</td>
+<td style="text-align:left;">
+$5,102.71
+</td>
+<td style="text-align:left;">
+0.33%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+marca.com
+</td>
+<td style="text-align:left;">
+55,690
+</td>
+<td style="text-align:left;">
+270
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+$9,661.12
+</td>
+<td style="text-align:left;">
+$4,830.56
+</td>
+<td style="text-align:left;">
+0.48%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+npr.org
+</td>
+<td style="text-align:left;">
+21,592
+</td>
+<td style="text-align:left;">
+95
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+$7,714.48
+</td>
+<td style="text-align:left;">
+$3,857.24
+</td>
+<td style="text-align:left;">
+0.44%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+dailyhodl.com
+</td>
+<td style="text-align:left;">
+39,212
+</td>
+<td style="text-align:left;">
+260
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+$3,621.42
+</td>
+<td style="text-align:left;">
+$3,621.42
+</td>
+<td style="text-align:left;">
+0.66%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sports.yahoo.com
+</td>
+<td style="text-align:left;">
+17,478
+</td>
+<td style="text-align:left;">
+68
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+$12,597.13
+</td>
+<td style="text-align:left;">
+$3,149.28
+</td>
+<td style="text-align:left;">
+0.39%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+insider.com
+</td>
+<td style="text-align:left;">
+232,354
+</td>
+<td style="text-align:left;">
+922
+</td>
+<td style="text-align:left;">
+7
+</td>
+<td style="text-align:left;">
+$14,253.81
+</td>
+<td style="text-align:left;">
+$2,036.26
+</td>
+<td style="text-align:left;">
+0.40%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ranker.com
+</td>
+<td style="text-align:left;">
+73,340
+</td>
+<td style="text-align:left;">
+140
+</td>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:left;">
+$9,932.15
+</td>
+<td style="text-align:left;">
+$1,986.43
+</td>
+<td style="text-align:left;">
+0.19%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homehacks.co
+</td>
+<td style="text-align:left;">
+27,473
+</td>
+<td style="text-align:left;">
+69
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+$2,922.29
+</td>
+<td style="text-align:left;">
+$1,461.14
+</td>
+<td style="text-align:left;">
+0.25%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+webmd.com
+</td>
+<td style="text-align:left;">
+30,774
+</td>
+<td style="text-align:left;">
+68
+</td>
+<td style="text-align:left;">
+6
+</td>
+<td style="text-align:left;">
+$6,741.63
+</td>
+<td style="text-align:left;">
+$1,123.60
+</td>
+<td style="text-align:left;">
+0.22%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+flightaware.com
+</td>
+<td style="text-align:left;">
+34,309
+</td>
+<td style="text-align:left;">
+163
+</td>
+<td style="text-align:left;">
+18
+</td>
+<td style="text-align:left;">
+$19,955.93
+</td>
+<td style="text-align:left;">
+$1,108.66
+</td>
+<td style="text-align:left;">
+0.48%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+onechicagocenter.com
+</td>
+<td style="text-align:left;">
+19,829
+</td>
+<td style="text-align:left;">
+42
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+$1,952.46
+</td>
+<td style="text-align:left;">
+$976.23
+</td>
+<td style="text-align:left;">
+0.21%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mapquest.com
+</td>
+<td style="text-align:left;">
+61,008
+</td>
+<td style="text-align:left;">
+262
+</td>
+<td style="text-align:left;">
+14
+</td>
+<td style="text-align:left;">
+$13,084.94
+</td>
+<td style="text-align:left;">
+$934.64
+</td>
+<td style="text-align:left;">
+0.43%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cheezburger.com
+</td>
+<td style="text-align:left;">
+46,493
+</td>
+<td style="text-align:left;">
+184
+</td>
+<td style="text-align:left;">
+14
+</td>
+<td style="text-align:left;">
+$12,604.90
+</td>
+<td style="text-align:left;">
+$900.35
+</td>
+<td style="text-align:left;">
+0.40%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+investopedia.com
+</td>
+<td style="text-align:left;">
+24,915
+</td>
+<td style="text-align:left;">
+40
+</td>
+<td style="text-align:left;">
+9
+</td>
+<td style="text-align:left;">
+$8,034.37
+</td>
+<td style="text-align:left;">
+$892.71
+</td>
+<td style="text-align:left;">
+0.16%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+boattrader.com
+</td>
+<td style="text-align:left;">
+71,322
+</td>
+<td style="text-align:left;">
+228
+</td>
+<td style="text-align:left;">
+22
+</td>
+<td style="text-align:left;">
+$19,082.47
+</td>
+<td style="text-align:left;">
+$867.39
+</td>
+<td style="text-align:left;">
+0.32%
+</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- performance by ad exchange ---</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"### Performance by Ad Exchange (Sorted by Conversions, then CPA)</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="performance-by-ad-exchange-sorted-by-conversions-then-cpa" class="level3">
+<h3 class="anchored" data-anchor-id="performance-by-ad-exchange-sorted-by-conversions-then-cpa">Performance by Ad Exchange (Sorted by Conversions, then CPA)</h3>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>exchange_performance <span class="sc">|&gt;</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">format_exchange_table</span>() <span class="sc">|&gt;</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+exchange
+</th>
+<th style="text-align:left;">
+total impressions
+</th>
+<th style="text-align:left;">
+total clicks
+</th>
+<th style="text-align:left;">
+total conversions
+</th>
+<th style="text-align:left;">
+total cost
+</th>
+<th style="text-align:left;">
+avg cpa
+</th>
+<th style="text-align:left;">
+avg ctr
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Google Ad Manager
+</td>
+<td style="text-align:left;">
+34,342,307
+</td>
+<td style="text-align:left;">
+97,488
+</td>
+<td style="text-align:left;">
+3,619
+</td>
+<td style="text-align:left;">
+$1,232,219.36
+</td>
+<td style="text-align:left;">
+$340.49
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+BidSwitch
+</td>
+<td style="text-align:left;">
+8,708,607
+</td>
+<td style="text-align:left;">
+23,187
+</td>
+<td style="text-align:left;">
+1,135
+</td>
+<td style="text-align:left;">
+$378,909.82
+</td>
+<td style="text-align:left;">
+$333.84
+</td>
+<td style="text-align:left;">
+0.27%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PubMatic
+</td>
+<td style="text-align:left;">
+13,445,406
+</td>
+<td style="text-align:left;">
+28,722
+</td>
+<td style="text-align:left;">
+959
+</td>
+<td style="text-align:left;">
+$304,204.30
+</td>
+<td style="text-align:left;">
+$317.21
+</td>
+<td style="text-align:left;">
+0.21%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Magnite DV+
+</td>
+<td style="text-align:left;">
+8,362,480
+</td>
+<td style="text-align:left;">
+24,491
+</td>
+<td style="text-align:left;">
+686
+</td>
+<td style="text-align:left;">
+$240,624.23
+</td>
+<td style="text-align:left;">
+$350.76
+</td>
+<td style="text-align:left;">
+0.29%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Index Exchange
+</td>
+<td style="text-align:left;">
+3,682,064
+</td>
+<td style="text-align:left;">
+10,517
+</td>
+<td style="text-align:left;">
+503
+</td>
+<td style="text-align:left;">
+$179,047.16
+</td>
+<td style="text-align:left;">
+$355.96
+</td>
+<td style="text-align:left;">
+0.29%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Xandr - Monetize SSP (AppNexus)
+</td>
+<td style="text-align:left;">
+3,175,753
+</td>
+<td style="text-align:left;">
+8,731
+</td>
+<td style="text-align:left;">
+395
+</td>
+<td style="text-align:left;">
+$82,472.98
+</td>
+<td style="text-align:left;">
+$208.79
+</td>
+<td style="text-align:left;">
+0.27%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+OpenX
+</td>
+<td style="text-align:left;">
+4,462,460
+</td>
+<td style="text-align:left;">
+13,209
+</td>
+<td style="text-align:left;">
+353
+</td>
+<td style="text-align:left;">
+$107,992.23
+</td>
+<td style="text-align:left;">
+$305.93
+</td>
+<td style="text-align:left;">
+0.30%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Yahoo Exchange
+</td>
+<td style="text-align:left;">
+4,136,646
+</td>
+<td style="text-align:left;">
+11,489
+</td>
+<td style="text-align:left;">
+236
+</td>
+<td style="text-align:left;">
+$86,005.29
+</td>
+<td style="text-align:left;">
+$364.43
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+TripleLift
+</td>
+<td style="text-align:left;">
+703,982
+</td>
+<td style="text-align:left;">
+2,271
+</td>
+<td style="text-align:left;">
+185
+</td>
+<td style="text-align:left;">
+$46,746.75
+</td>
+<td style="text-align:left;">
+$252.69
+</td>
+<td style="text-align:left;">
+0.32%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Smart RTB+ (Smartadserver)
+</td>
+<td style="text-align:left;">
+1,600,603
+</td>
+<td style="text-align:left;">
+4,909
+</td>
+<td style="text-align:left;">
+132
+</td>
+<td style="text-align:left;">
+$36,133.67
+</td>
+<td style="text-align:left;">
+$273.74
+</td>
+<td style="text-align:left;">
+0.31%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Yieldmo
+</td>
+<td style="text-align:left;">
+156,895
+</td>
+<td style="text-align:left;">
+559
+</td>
+<td style="text-align:left;">
+76
+</td>
+<td style="text-align:left;">
+$25,113.92
+</td>
+<td style="text-align:left;">
+$330.45
+</td>
+<td style="text-align:left;">
+0.36%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Taboola
+</td>
+<td style="text-align:left;">
+1,185,753
+</td>
+<td style="text-align:left;">
+2,664
+</td>
+<td style="text-align:left;">
+71
+</td>
+<td style="text-align:left;">
+$17,599.32
+</td>
+<td style="text-align:left;">
+$247.88
+</td>
+<td style="text-align:left;">
+0.22%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sovrn
+</td>
+<td style="text-align:left;">
+282,824
+</td>
+<td style="text-align:left;">
+729
+</td>
+<td style="text-align:left;">
+41
+</td>
+<td style="text-align:left;">
+$10,139.37
+</td>
+<td style="text-align:left;">
+$247.30
+</td>
+<td style="text-align:left;">
+0.26%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+GumGum
+</td>
+<td style="text-align:left;">
+1,064,293
+</td>
+<td style="text-align:left;">
+2,859
+</td>
+<td style="text-align:left;">
+29
+</td>
+<td style="text-align:left;">
+$10,609.89
+</td>
+<td style="text-align:left;">
+$365.86
+</td>
+<td style="text-align:left;">
+0.27%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sharethrough
+</td>
+<td style="text-align:left;">
+43,069
+</td>
+<td style="text-align:left;">
+246
+</td>
+<td style="text-align:left;">
+21
+</td>
+<td style="text-align:left;">
+$9,341.85
+</td>
+<td style="text-align:left;">
+$444.85
+</td>
+<td style="text-align:left;">
+0.57%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PulsePoint
+</td>
+<td style="text-align:left;">
+339,713
+</td>
+<td style="text-align:left;">
+944
+</td>
+<td style="text-align:left;">
+19
+</td>
+<td style="text-align:left;">
+$5,119.84
+</td>
+<td style="text-align:left;">
+$269.47
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Kargo
+</td>
+<td style="text-align:left;">
+12,459
+</td>
+<td style="text-align:left;">
+84
+</td>
+<td style="text-align:left;">
+14
+</td>
+<td style="text-align:left;">
+$1,593.01
+</td>
+<td style="text-align:left;">
+$113.79
+</td>
+<td style="text-align:left;">
+0.67%
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="analyze-performance-by-type-of-device-creative-size-creative-message" class="level2">
+<h2 class="anchored" data-anchor-id="analyze-performance-by-type-of-device-creative-size-creative-message">Analyze performance by type of device, creative size, creative message</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># analyze performance by the type of device (smartphone, pc, etc.)</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>device_performance <span class="ot">&lt;-</span> dat_kpis <span class="sc">|&gt;</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(device_make) <span class="sc">|&gt;</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_impressions =</span> <span class="fu">sum</span>(impressions),</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_clicks =</span> <span class="fu">sum</span>(clicks),</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_conversions =</span> <span class="fu">sum</span>(total_conversions),</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_gross_cost =</span> <span class="fu">sum</span>(gross_cost),</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate overall cpa for the device type</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_cpa =</span> <span class="fu">ifelse</span>(total_conversions <span class="sc">&gt;</span> <span class="dv">0</span>, total_gross_cost <span class="sc">/</span> total_conversions, na_real_),</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate overall ctr for the device type</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_ctr =</span> <span class="fu">ifelse</span>(total_impressions <span class="sc">&gt;</span> <span class="dv">0</span>, total_clicks <span class="sc">/</span> total_impressions, <span class="dv">0</span>),</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate overall conversion rate for the device type</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_conv_rate =</span> <span class="fu">ifelse</span>(total_clicks <span class="sc">&gt;</span> <span class="dv">0</span>, total_conversions <span class="sc">/</span> total_clicks, <span class="dv">0</span>),</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">'drop'</span></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- performance by device ---</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"### Performance by Device</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="performance-by-device" class="level3">
+<h3 class="anchored" data-anchor-id="performance-by-device">Performance by Device</h3>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>device_performance <span class="sc">|&gt;</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_impressions =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total_impressions, <span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_clicks =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total_clicks, <span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_conversions =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total_conversions, <span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_gross_cost =</span> scales<span class="sc">::</span><span class="fu">dollar</span>(total_gross_cost, <span class="at">accuracy =</span> <span class="fl">0.01</span>),</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_cpa =</span> scales<span class="sc">::</span><span class="fu">dollar</span>(avg_cpa, <span class="at">accuracy =</span> <span class="fl">0.01</span>),</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_ctr =</span> scales<span class="sc">::</span><span class="fu">percent</span>(avg_ctr, <span class="at">accuracy =</span> <span class="fl">0.01</span>),</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_conv_rate =</span> scales<span class="sc">::</span><span class="fu">percent</span>(avg_conv_rate, <span class="at">accuracy =</span> <span class="fl">0.01</span>)</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">format =</span> <span class="st">"html"</span>,</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"device make"</span>, <span class="st">"total impressions"</span>, <span class="st">"total clicks"</span>, <span class="st">"total conversions"</span>, <span class="st">"total cost"</span>, <span class="st">"avg cpa"</span>, <span class="st">"avg ctr"</span>, <span class="st">"avg conv. rate"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+device make
+</th>
+<th style="text-align:left;">
+total impressions
+</th>
+<th style="text-align:left;">
+total clicks
+</th>
+<th style="text-align:left;">
+total conversions
+</th>
+<th style="text-align:left;">
+total cost
+</th>
+<th style="text-align:left;">
+avg cpa
+</th>
+<th style="text-align:left;">
+avg ctr
+</th>
+<th style="text-align:left;">
+avg conv. rate
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Apple PC
+</td>
+<td style="text-align:left;">
+2,805,143
+</td>
+<td style="text-align:left;">
+8,987
+</td>
+<td style="text-align:left;">
+620
+</td>
+<td style="text-align:left;">
+$214,803.87
+</td>
+<td style="text-align:left;">
+$346.46
+</td>
+<td style="text-align:left;">
+0.32%
+</td>
+<td style="text-align:left;">
+6.90%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Smartphone
+</td>
+<td style="text-align:left;">
+78,213,490
+</td>
+<td style="text-align:left;">
+210,740
+</td>
+<td style="text-align:left;">
+6,739
+</td>
+<td style="text-align:left;">
+$2,252,125.01
+</td>
+<td style="text-align:left;">
+$334.19
+</td>
+<td style="text-align:left;">
+0.27%
+</td>
+<td style="text-align:left;">
+3.20%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Windows PC
+</td>
+<td style="text-align:left;">
+4,686,681
+</td>
+<td style="text-align:left;">
+13,372
+</td>
+<td style="text-align:left;">
+1,115
+</td>
+<td style="text-align:left;">
+$306,944.13
+</td>
+<td style="text-align:left;">
+$275.29
+</td>
+<td style="text-align:left;">
+0.29%
+</td>
+<td style="text-align:left;">
+8.34%
+</td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># analyze performance by ad size and the text message used</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co"># performance by creative size </span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>size_performance <span class="ot">&lt;-</span> dat_kpis <span class="sc">|&gt;</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(creative_size) <span class="sc">|&gt;</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_impressions =</span> <span class="fu">sum</span>(impressions),</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_clicks =</span> <span class="fu">sum</span>(clicks),</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_conversions =</span> <span class="fu">sum</span>(total_conversions),</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_gross_cost =</span> <span class="fu">sum</span>(gross_cost),</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate overall cpa for the creative size</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_cpa =</span> <span class="fu">ifelse</span>(total_conversions <span class="sc">&gt;</span> <span class="dv">0</span>, total_gross_cost <span class="sc">/</span> total_conversions, na_real_),</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate overall ctr for the creative size</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_ctr =</span> <span class="fu">ifelse</span>(total_impressions <span class="sc">&gt;</span> <span class="dv">0</span>, total_clicks <span class="sc">/</span> total_impressions, <span class="dv">0</span>),</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">'drop'</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># sort by number of impressions to see most used sizes first</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(total_impressions))</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a><span class="co"># performance by creative message</span></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>message_performance <span class="ot">&lt;-</span> dat_kpis <span class="sc">|&gt;</span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(creative_messaging) <span class="sc">|&gt;</span></span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_impressions =</span> <span class="fu">sum</span>(impressions),</span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_clicks =</span> <span class="fu">sum</span>(clicks),</span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_conversions =</span> <span class="fu">sum</span>(total_conversions),</span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_gross_cost =</span> <span class="fu">sum</span>(gross_cost),</span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate overall cpa for the message</span></span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_cpa =</span> <span class="fu">ifelse</span>(total_conversions <span class="sc">&gt;</span> <span class="dv">0</span>, total_gross_cost <span class="sc">/</span> total_conversions, na_real_),</span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate overall conversion rate for the message</span></span>
+<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_conv_rate =</span> <span class="fu">ifelse</span>(total_clicks <span class="sc">&gt;</span> <span class="dv">0</span>, total_conversions <span class="sc">/</span> total_clicks, <span class="dv">0</span>),</span>
+<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">'drop'</span></span>
+<span id="cb23-33"><a href="#cb23-33" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb23-34"><a href="#cb23-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># sort by cost-effectiveness (lowest cpa)</span></span>
+<span id="cb23-35"><a href="#cb23-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(avg_cpa)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- performance by creative size ---</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n\n</span><span class="st">### Performance by Creative Size (Sorted by Impressions)</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="performance-by-creative-size-sorted-by-impressions" class="level3">
+<h3 class="anchored" data-anchor-id="performance-by-creative-size-sorted-by-impressions">Performance by Creative Size (Sorted by Impressions)</h3>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>size_performance <span class="sc">|&gt;</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_impressions =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total_impressions, <span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_clicks =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total_clicks, <span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_conversions =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total_conversions, <span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_gross_cost =</span> scales<span class="sc">::</span><span class="fu">dollar</span>(total_gross_cost, <span class="at">accuracy =</span> <span class="fl">0.01</span>),</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_cpa =</span> scales<span class="sc">::</span><span class="fu">dollar</span>(avg_cpa, <span class="at">accuracy =</span> <span class="fl">0.01</span>),</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_ctr =</span> scales<span class="sc">::</span><span class="fu">percent</span>(avg_ctr, <span class="at">accuracy =</span> <span class="fl">0.01</span>)</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">format =</span> <span class="st">"html"</span>,</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"creative size"</span>, <span class="st">"total impressions"</span>, <span class="st">"total clicks"</span>, <span class="st">"total conversions"</span>, <span class="st">"total cost"</span>, <span class="st">"avg cpa"</span>, <span class="st">"avg ctr"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+creative size
+</th>
+<th style="text-align:left;">
+total impressions
+</th>
+<th style="text-align:left;">
+total clicks
+</th>
+<th style="text-align:left;">
+total conversions
+</th>
+<th style="text-align:left;">
+total cost
+</th>
+<th style="text-align:left;">
+avg cpa
+</th>
+<th style="text-align:left;">
+avg ctr
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+300x250
+</td>
+<td style="text-align:left;">
+40,755,215
+</td>
+<td style="text-align:left;">
+115,476
+</td>
+<td style="text-align:left;">
+3,905
+</td>
+<td style="text-align:left;">
+$1,273,132.81
+</td>
+<td style="text-align:left;">
+$326.03
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+320x50
+</td>
+<td style="text-align:left;">
+40,014,637
+</td>
+<td style="text-align:left;">
+102,729
+</td>
+<td style="text-align:left;">
+4,009
+</td>
+<td style="text-align:left;">
+$1,245,150.52
+</td>
+<td style="text-align:left;">
+$310.59
+</td>
+<td style="text-align:left;">
+0.26%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+300x50
+</td>
+<td style="text-align:left;">
+4,935,462
+</td>
+<td style="text-align:left;">
+14,894
+</td>
+<td style="text-align:left;">
+560
+</td>
+<td style="text-align:left;">
+$255,589.68
+</td>
+<td style="text-align:left;">
+$456.41
+</td>
+<td style="text-align:left;">
+0.30%
+</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- performance by creative message ---</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n\n</span><span class="st">### Performance by Creative Message (Sorted by CPA)</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="performance-by-creative-message-sorted-by-cpa" class="level3">
+<h3 class="anchored" data-anchor-id="performance-by-creative-message-sorted-by-cpa">Performance by Creative Message (Sorted by CPA)</h3>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>message_performance <span class="sc">|&gt;</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_impressions =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total_impressions, <span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_clicks =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total_clicks, <span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_conversions =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total_conversions, <span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_gross_cost =</span> scales<span class="sc">::</span><span class="fu">dollar</span>(total_gross_cost, <span class="at">accuracy =</span> <span class="fl">0.01</span>),</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_cpa =</span> scales<span class="sc">::</span><span class="fu">dollar</span>(avg_cpa, <span class="at">accuracy =</span> <span class="fl">0.01</span>),</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_conv_rate =</span> scales<span class="sc">::</span><span class="fu">percent</span>(avg_conv_rate, <span class="at">accuracy =</span> <span class="fl">0.01</span>)</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">format =</span> <span class="st">"html"</span>,</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"creative messaging"</span>, <span class="st">"total impressions"</span>, <span class="st">"total clicks"</span>, <span class="st">"total conversions"</span>, <span class="st">"total cost"</span>, <span class="st">"avg cpa"</span>, <span class="st">"avg conv. rate"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+creative messaging
+</th>
+<th style="text-align:left;">
+total impressions
+</th>
+<th style="text-align:left;">
+total clicks
+</th>
+<th style="text-align:left;">
+total conversions
+</th>
+<th style="text-align:left;">
+total cost
+</th>
+<th style="text-align:left;">
+avg cpa
+</th>
+<th style="text-align:left;">
+avg conv. rate
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+10% Discount - Ends 6/1
+</td>
+<td style="text-align:left;">
+25,035,540
+</td>
+<td style="text-align:left;">
+58,860
+</td>
+<td style="text-align:left;">
+2,237
+</td>
+<td style="text-align:left;">
+$691,522.63
+</td>
+<td style="text-align:left;">
+$309.13
+</td>
+<td style="text-align:left;">
+3.80%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Subscribe Today - 10% Discount
+</td>
+<td style="text-align:left;">
+22,412,582
+</td>
+<td style="text-align:left;">
+65,302
+</td>
+<td style="text-align:left;">
+2,564
+</td>
+<td style="text-align:left;">
+$813,855.58
+</td>
+<td style="text-align:left;">
+$317.42
+</td>
+<td style="text-align:left;">
+3.93%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sign up Today - 10% Off
+</td>
+<td style="text-align:left;">
+21,106,602
+</td>
+<td style="text-align:left;">
+60,421
+</td>
+<td style="text-align:left;">
+1,997
+</td>
+<td style="text-align:left;">
+$678,403.46
+</td>
+<td style="text-align:left;">
+$339.71
+</td>
+<td style="text-align:left;">
+3.31%
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sign up Now - 10% Off
+</td>
+<td style="text-align:left;">
+17,150,590
+</td>
+<td style="text-align:left;">
+48,516
+</td>
+<td style="text-align:left;">
+1,676
+</td>
+<td style="text-align:left;">
+$590,091.34
+</td>
+<td style="text-align:left;">
+$352.08
+</td>
+<td style="text-align:left;">
+3.45%
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="experimental" class="level3">
+<h3 class="anchored" data-anchor-id="experimental">EXPERIMENTAL</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># for counts, the simplest function is count()</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co"># the 'sort = TRUE' argument shows the highest counts at the top</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Top 10 app_url counts</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>app_url_counts <span class="ot">&lt;-</span> dat_kpis <span class="sc">|&gt;</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(app_url, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Top 10 exchange counts</span></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>exchange_counts <span class="ot">&lt;-</span> dat_kpis <span class="sc">|&gt;</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(exchange, <span class="at">sort =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a><span class="co"># print the results</span></span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Top 10 App/URL Counts (by row count)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Top 10 App/URL Counts (by row count)"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(app_url_counts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 235 × 2
+   app_url              n
+   &lt;chr&gt;            &lt;int&gt;
+ 1 weather.com         37
+ 2 ebay.com            32
+ 3 msn.com             29
+ 4 yahoo.com           27
+ 5 mail.yahoo.com      25
+ 6 realtor.com         24
+ 7 mail.aol.com        19
+ 8 biblegateway.com    17
+ 9 accuweather.com     15
+10 outlook.live.com    15
+# ℹ 225 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Top 10 Exchange Counts (by row count)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Top 10 Exchange Counts (by row count)"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(exchange_counts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 17 × 2
+   exchange                            n
+   &lt;chr&gt;                           &lt;int&gt;
+ 1 Google Ad Manager                 320
+ 2 BidSwitch                         110
+ 3 PubMatic                           74
+ 4 Magnite DV+                        64
+ 5 Index Exchange                     43
+ 6 OpenX                              29
+ 7 Xandr - Monetize SSP (AppNexus)    17
+ 8 Yahoo Exchange                     17
+ 9 TripleLift                         12
+10 Smart RTB+ (Smartadserver)         11
+11 Yieldmo                             7
+12 Taboola                             6
+13 Sovrn                               5
+14 GumGum                              4
+15 Sharethrough                        4
+16 PulsePoint                          3
+17 Kargo                               1</code></pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
